@@ -16,15 +16,17 @@ Linet es un *Line Tower Defense*: los enemigos recorren un camino fijo (o semi-f
 
 ## Pillars de diseño
 
-1. **Legibilidad del camino** — siempre se entiende por dónde van los creeps.
-2. **Decisiones de build** — composición de torres > spam de la misma torre.
-3. **Economía tensa** — oro, timing de upgrades y riesgo de leak importan.
-4. **Sesiones cortas** — una partida completa en un tiempo objetivo (definir abajo).
+1. **Multijugador online 1v1 primero** — lanes propios + sends al rival (A + C).
+2. **Legibilidad del camino** — siempre se entiende por dónde van los creeps (y de quién es el lane).
+3. **Decisiones de build** — composición de torres > spam de la misma torre.
+4. **Presión ofensiva** — clear bueno se convierte en sends, no solo en farmear oro.
+5. **Economía tensa** — gold, send points, upgrades y riesgo de leak importan.
+6. **Sesiones cortas** — una partida completa en un tiempo objetivo (definir en MVP).
 
 ## Audiencia
 
-- Jugadores casuales de TD / fans de mapas custom WC3.
-- Plataforma objetivo: _por definir_ (web / desktop / móvil).
+- Jugadores casuales de TD / fans de mapas custom WC3 multi.
+- Plataforma MVP: **web** (Phaser); server reutilizable para mobile después.
 
 ## Alcance
 

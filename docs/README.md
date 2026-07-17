@@ -7,10 +7,11 @@ Juego tipo *Line Tower Defense* (estilo mapa de Warcraft III).
 
 1. Empezá por [visión/producto.md](./vision/producto.md) — qué es Linet y qué no es.
 2. Cerrá alcance en [roadmap/mvp.md](./roadmap/mvp.md) y el catálogo en [roadmap/features.md](./roadmap/features.md).
-3. Definí el stack en [core/stack.md](./core/stack.md).
-4. Cerrá sistemas de juego en `gameplay/` y contenido en `content/`.
-5. Registrá decisiones importantes en `decisions/` (ADRs).
-6. Recién después: estructura de carpetas de código en [core/arquitectura.md](./core/arquitectura.md).
+3. Fijá el stack en [core/stack.md](./core/stack.md) (Phaser + Colyseus).
+4. Cerrá reglas multi en [multiplayer/overview.md](./multiplayer/overview.md).
+5. Cerrá sistemas de juego en `gameplay/` y contenido en `content/`.
+6. Registrá decisiones importantes en `decisions/` (ADRs).
+7. Recién después: código según [core/arquitectura.md](./core/arquitectura.md).
 
 ## Índice
 
@@ -18,6 +19,7 @@ Juego tipo *Line Tower Defense* (estilo mapa de Warcraft III).
 |------|------------|
 | [vision/](./vision/) | Producto, pillars, audiencia |
 | [roadmap/](./roadmap/) | MVP, features, backlog / próximas |
+| [multiplayer/](./multiplayer/) | Rooms, lanes A, send C, autoridad (pillar MVP) |
 | [core/](./core/) | Stack, arquitectura, game loop, estados |
 | [gameplay/](./gameplay/) | Economía, combate, path, olas |
 | [content/](./content/) | Catálogos: torres, creeps, mapas |

@@ -38,11 +38,30 @@ Usá los estados de [README.md](./README.md). Cuando una feature sea grande, lin
 | `map-second` | Segundo mapa | later | |
 | `flying-creeps` | Unidades aéreas | later | |
 
+## Multijugador
+
+| ID | Feature | Estado | Notas / doc |
+|----|---------|--------|-------------|
+| `mp-online` | Multijugador online (pillar MVP) | mvp | [overview.md](../multiplayer/overview.md) |
+| `mp-rooms` | Create / join room | mvp | 1v1 |
+| `mp-lobby` | Lobby + ready | mvp | |
+| `mp-lanes` | Lanes paralelos (A) | mvp | paths espejo |
+| `mp-send` | Send creeps al rival (C) | mvp | [send.md](../multiplayer/send.md) |
+| `mp-authority` | Server-authoritative sim | mvp | [arquitectura.md](../core/arquitectura.md) |
+| `mp-sync` | State sync de partida | mvp | |
+| `mp-reconnect` | Reconexión corta | mvp | Colyseus |
+| `mp-results` | Resultados / rematch | mvp | |
+| `mp-coop` | Coop mismo path (B) | later | |
+| `mp-ranked` | Ranked / ELO | later | |
+| `mp-skill-mm` | Matchmaking por skill | later | |
+| `mp-local` | Hotseat / same device | later | |
+| `mp-ffa` | 3–4 jugadores | later | |
+
 ## Modos
 
 | ID | Feature | Estado | Notas / doc |
 |----|---------|--------|-------------|
-| `mode-classic` | Classic | mvp | [classic.md](../modes/classic.md) |
+| `mode-classic` | Classic multi | mvp | [classic.md](../modes/classic.md) |
 | `mode-random` | Random / draft de torres | later | [random.md](../modes/random.md) |
 | `mode-endless` | Endless | later | |
 
@@ -50,7 +69,9 @@ Usá los estados de [README.md](./README.md). Cuando una feature sea grande, lin
 
 | ID | Feature | Estado | Notas / doc |
 |----|---------|--------|-------------|
-| `ui-hud` | HUD de partida | mvp | [screens.md](../ui/screens.md) |
+| `ui-lobby` | UI create/join/ready | mvp | [screens.md](../ui/screens.md) |
+| `ui-hud` | HUD de partida | mvp | oro, vidas, send pts |
+| `ui-send-panel` | Panel de sends | mvp | [send.md](../multiplayer/send.md) |
 | `ui-build-bar` | Barra de torres | mvp | |
 | `ui-hotkeys` | Hotkeys | next | |
 | `ui-settings` | Opciones (audio, etc.) | next | |
@@ -62,10 +83,9 @@ Usá los estados de [README.md](./README.md). Cuando una feature sea grande, lin
 | ID | Feature | Estado | Notas / doc |
 |----|---------|--------|-------------|
 | `tech-sim-render-split` | Simulación ≠ presentación | mvp | [0001](../decisions/0001-simulacion-vs-presentacion.md) |
+| `tech-stack-phaser-colyseus` | Phaser + Colyseus + TS | mvp | [0002](../decisions/0002-stack-web-multi.md) |
 | `tech-content-data` | Torres/olas como data | mvp | [stack.md](../core/stack.md) |
 | `tech-save-run` | Save mid-run | later | |
-| `mp-local` | Multijugador local | later | |
-| `mp-online` | Multijugador online | later | |
 | `tool-map-editor` | Editor de mapas | later | |
 
 ## Cómo agregar una feature

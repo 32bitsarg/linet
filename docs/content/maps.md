@@ -3,17 +3,18 @@
 > **Estado:** borrador  
 > Sistema de path → [../gameplay/path.md](../gameplay/path.md)
 
-## MVP
+## Contenido MVP
 
 | id | Nombre | Lanes | Slots (aprox) | Forma del path | Estado |
 |----|--------|-------|---------------|----------------|--------|
-| `line_01` | | 1 | 20–30 | zigzag / S | draft |
+| `line_01` | | **2 espejo** (1v1) | 15–25 / jugador | zigzag / S | draft |
 
 ## Notas de diseño de `line_01`
 
-- El path debe ser legible en un vistazo.
-- Slots cerca de curvas = más valor (más tiempo de contacto).
-- Evitar slots “muertos” (fuera de toda range útil).
+- Simetría justa: mismos waypoints relativos y mismos slots.
+- Legible de un vistazo **por lane**; el rival se ve sin confundir ownership.
+- Slots cerca de curvas = más valor.
+- Espacio visual para feedback de **incoming send**.
 
 ## Post-MVP
 

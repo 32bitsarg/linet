@@ -2,36 +2,36 @@
 
 > **Estado:** borrador
 
-## Fuentes de oro
+## Fuentes de recursos
 
-| Fuente | Regla |
-|--------|-------|
-| Kill | Oro base del creep (± modifiers) |
-| Fin de ola | Bonus opcional |
-| Interés | % del oro no gastado entre olas (cap) — _sí/no TBD_ |
-| Venta de torre | % del valor invertido |
+| Recurso | Fuente | Regla |
+|---------|--------|-------|
+| Gold | Kill | Oro base del creep (± modifiers) |
+| Gold | Fin de ola | Bonus opcional |
+| Gold | Venta de torre | % del valor invertido |
+| Send points | Kill / clear / pasivo | Ver [send.md](../multiplayer/send.md) |
+| Interés (gold) | Entre olas | post-MVP |
 
 ## Costos
 
-- Place tower: costo de `TowerDef.cost`
-- Upgrade: costo por nivel/rama
-- Sell refund: _TBD_ (ej. 50–70%)
+- Place / upgrade / sell → **gold**
+- Enviar creeps al rival → **send points** (o gold si elegimos currency única)
 
 ## Leak
 
-Cuando un creep llega al final del path:
+Cuando un creep (ola o send) llega al exit del **defensor**:
 
-- Pierde `N` vidas (o 1 vida por creep / por HP?).
-- ¿Devuelve oro parcial? (estilo algunos Line TD) — _TBD_
+- Resta `N` vidas al dueño de ese lane.
+- **No** genera send automático al rival en MVP.
 
 ## Parámetros iniciales (MVP)
 
 | Parámetro | Valor |
 |-----------|-------|
 | Oro inicial | |
+| Send points iniciales | |
 | Vidas iniciales | |
-| Interest rate | |
-| Interest cap | |
+| Interest rate | n/a (MVP) |
 | Sell refund % | |
 
 ## Sensación deseada

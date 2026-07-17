@@ -1,20 +1,37 @@
-# Modo Classic
+# Modo Classic (multi A + C)
 
-> **Estado:** borrador
+> **Estado:** en revisión  
+> Multi → [../multiplayer/overview.md](../multiplayer/overview.md) · Send → [../multiplayer/send.md](../multiplayer/send.md)
 
 ## Idea
 
-Partida estándar Line TD: olas fijas, roster de torres completo disponible desde el inicio (o con unlock suave).
+Partida **1v1** Line TD en room online:
+
+- **A:** cada jugador su lane (path + slots).
+- **C:** sends manuales al lane rival.
+- Olas base **espejo** en ambos lanes.
+
+Es el modo default del MVP.
 
 ## Reglas
 
-- Mapa: `line_01` (MVP)
-- Olas: secuencia fija documentada en content (cuando exista wave table)
-- Torres: roster MVP completo
-- Victoria: sobrevivir ola N
-- Derrota: vidas ≤ 0
+| Regla | Valor |
+|-------|--------|
+| Jugadores | 2 |
+| Mapa | `line_01` espejo |
+| Olas | secuencia fija, misma en ambos lanes |
+| Torres | roster MVP completo |
+| Economía | gold (+ send points) **por jugador** |
+| Vidas | por jugador |
+| Victoria | last standing (0 vidas = derrota) |
+| Sends | catálogo MVP; solo manuales |
 
-## Variantes futuras
+## Lobby
 
-- Endless
-- Hard / Extreme modifiers
+- Create / join → 2 players ready → start
+
+## No incluye (classic MVP)
+
+- Coop (B)
+- Send automático por leak
+- FFA 3–4

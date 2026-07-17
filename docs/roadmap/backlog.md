@@ -29,9 +29,13 @@ Orden tentativo — reordenar cuando el MVP esté jugable.
 | `flying-creeps` | Aéreos + anti-air | Cambia targeting y roster |
 | `status-dot` | DoTs | Balance + VFX |
 | `meta-unlocks` | Unlocks persistentes | Cuenta / save global |
-| `meta-ranking` | Ranking | Backend o leaderboard local |
-| `mp-local` | Multi local | Hotseat o split — definir |
-| `mp-online` | Multi online | Gran ADR aparte |
+| `meta-ranking` | Ranking | Leaderboard |
+| `mp-ranked` | Ranked / ELO | Después de rooms estables |
+| `mp-skill-mm` | Matchmaking por skill | Room code alcanza en MVP |
+| `mp-coop` | Coop mismo path (B) | No es fantasy A+C |
+| `mp-ffa` | 3–4 jugadores | Balance de sends |
+| `mp-leak-autosend` | Leak manda creeps al rival | Cuidado death spiral |
+| `mp-local` | Multi same-device | Hotseat / split |
 | `tool-map-editor` | Editor | Después de MapDef estable |
 | `tech-save-run` | Save mid-run | Nice para sesiones largas |
 

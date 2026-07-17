@@ -1,31 +1,37 @@
 # UI / UX
 
-> **Estado:** borrador
+> **Estado:** borrador  
+> Multi → [../multiplayer/overview.md](../multiplayer/overview.md)
 
 ## Pantallas
 
 | Pantalla | Contenido mínimo |
 |----------|------------------|
-| Main menu | Play, opciones, créditos |
-| HUD partida | Oro, vidas, ola actual, botón next/pause |
-| Build bar | Torres disponibles + costo |
+| Main menu | Jugar (multi), opciones, créditos |
+| Lobby | Crear room / unirse, 2 players, ready, start |
+| HUD partida | Oro, send points, vidas, ola, rival |
+| Build bar | Torres + costo (gold) |
+| Send panel | 2–4 sends + costo (send points) + incoming banner |
 | Tower panel | Stats, upgrade, sell, targeting |
-| End screen | Win/lose, stats, replay/menu |
+| Disconnect | “Reconectando…” |
+| End screen | Winner, leaks/sends stats, rematch, leave |
 
 ## HUD — prioridades
 
-1. Vidas y oro siempre visibles.
-2. Ola actual / restantes.
-3. Feedback claro de leak ( entera / flash ).
-4. Range preview al colocar / seleccionar torre.
+1. Vidas, oro y **send points** propios.
+2. Ola actual.
+3. Estado del rival (vidas).
+4. Feedback de leak + **incoming send**.
+5. Range preview al colocar / seleccionar.
 
 ## Interacciones clave
 
-- Click slot vacío → coloca torre seleccionada (o abre picker).
-- Click torre → panel de upgrade/sell.
-- Hotkeys (deseables): `1–6` torres, `U` upgrade, `S` sell, `Space` pause.
+- Lobby: create / paste code / ready.
+- Click slot vacío propio → place (slots ajenos no buildables).
+- Click torre propia → upgrade/sell.
+- Hotkeys (post-MVP inmediato): `1–6` torres, `U` upgrade, `S` sell.
 
 ## Accesibilidad / claridad
 
-- Contraste fuerte path vs build area.
-- Colores de daño/CC legibles sin depender solo del color.
+- Contraste fuerte path vs build area vs lanes de otros jugadores.
+- Identidad de color/nombre por jugador estable en lobby y partida.

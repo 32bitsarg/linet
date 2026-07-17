@@ -1,39 +1,52 @@
 # Stack
 
-> **Estado:** borrador
+> **Estado:** en revisión  
+> ADR → [0002-stack-web-multi.md](../decisions/0002-stack-web-multi.md)
 
-## Decisión
+## Fase 1 — Web (MVP)
 
-| Capa | Opción | Alternativas descartadas | Por qué |
-|------|--------|--------------------------|---------|
-| Lenguaje | _TBD_ | | |
-| Runtime / engine | _TBD_ (p.ej. Phaser, Pixi, Godot, Unity, custom Canvas) | | |
-| Bundler / tooling | _TBD_ | | |
-| Lenguaje de datos (torres, olas) | _TBD_ (JSON / TS / YAML) | | |
-| Persistencia local | _TBD_ | | |
-| Multiplayer (futuro) | _TBD_ | | |
+| Capa | Opción | Notas |
+|------|--------|-------|
+| Lenguaje | **TypeScript** | Cliente y servidor |
+| Frontend / engine | **Phaser 3** | 2D HTML5; TD / estilo Warcraft |
+| Backend | **Colyseus + Node.js** | Rooms, sync, reconexión, matchmaking |
+| Comunicación | **WebSockets** (vía Colyseus) | Tiempo real |
+| Datos de contenido | **TypeScript / JSON** | Torres, creeps, olas, mapas |
+| Deploy cliente | Web (browser) | Base también para mobile después |
 
-## Requisitos no negociables del stack
+## Por qué este stack
 
-- Actualización de juego determinista o fácilmente depurable (ticks / fixed timestep).
-- Datos de contenido (torres, creeps, olas) **separados** de la lógica.
-- Fácil iterar balance sin recompilar todo el engine (ideal).
+- El **multijugador online es feature principal del MVP** → hace falta servidor de rooms desde el día 1.
+- Phaser cubre path, sprites, input y HUD sin un engine pesado.
+- Colyseus evita reinventar sync / leave-rejoin / matchmaking.
+- El mismo backend puede servir web y, más adelante, clientes mobile.
 
-## Estructura prevista del repo (código) — borrador
+## Requisitos no negociables
+
+- **Simulación autoritativa en servidor** (el cliente predice/renderiza; no decide kills/oro finales).
+- Simulación **separada** de Phaser (ADR 0001) para testear y reusar en Colyseus room.
+- Fixed timestep / ticks deterministas o reconciliables.
+- Contenido (torres, creeps, olas) como data, no hardcodeado en escenas.
+
+## Estructura prevista del repo (código)
 
 ```
 linet/
-  docs/           # esta documentación
-  src/            # código del juego (cuando exista)
-  content/        # datos: torres, creeps, olas, mapas
-  assets/         # sprites, audio, fuentes
-  tests/          # tests de sistemas (economía, path, daño)
+  docs/
+  packages/          # o apps/ — monorepo ligero
+    shared/          # tipos, defs, simulación pura
+    client/          # Phaser 3
+    server/          # Colyseus + Node
+  content/           # torres, creeps, olas, mapas
+  assets/
+  tests/
 ```
 
-> Detalle fino de módulos → [arquitectura.md](./arquitectura.md)
+> Detalle de módulos → [arquitectura.md](./arquitectura.md)  
+> Multiplayer → [../multiplayer/overview.md](../multiplayer/overview.md)
 
-## Preguntas abiertas
+## Preguntas abiertas (no bloquean el stack)
 
-1. ¿Web-first o desktop-first?
-2. ¿2D top-down ortogonal o isométrico?
-3. ¿Necesitamos física real o solo hit-scan / proyectiles simples?
+1. ¿Top-down ortogonal o isométrico?
+2. ¿Hitscan o proyectiles con travel time?
+3. ¿Hosting MVP: un VPS / Railway / Fly.io / similar?

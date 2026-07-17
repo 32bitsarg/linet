@@ -18,6 +18,7 @@ Adoptar separación simulación / presentación (ver `docs/core/arquitectura.md`
 
 ## Consecuencias
 
-- Los sistemas (path, towers, economy…) no importan Phaser/Godot/DOM.
+- Los sistemas (path, towers, economy…) no importan Phaser ni Colyseus.
 - La UI solo envía intents y lee snapshots de estado.
-- Podemos escribir tests de olas/economía sin abrir el juego.
+- La **misma simulación** corre en el servidor Colyseus (autoridad) y en tests sin red.
+- Podemos escribir tests de olas/economía sin abrir el juego ni levantar rooms.

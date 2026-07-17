@@ -41,15 +41,22 @@ WaveEntry {
 - Mid: mezcla de tanques + swarms + algún flying/special.
 - Late: bosses + comps que fuerzan diversidad de torres.
 
+## Multi (A + C)
+
+- Cada jugador tiene su propia instancia de path (espejo).
+- La **ola base** spawnea en **ambos** lanes a la vez (mismo `WaveDef`).
+- Los **sends** son spawns extra en el lane rival, fuera o en cola respecto a la ola — ver [send.md](../multiplayer/send.md).
+- “Fin de ola” por jugador: no quedan creeps vivos **de esa ola** en su lane (los sends pueden seguir activos).
+
 ## Control de ola
 
 - [ ] Auto-start con countdown
-- [ ] Manual “Next wave”
+- [ ] Manual “Next wave” (ambos / host)
 - [ ] Híbrido (auto tras X segundos)
 
-Elegido: _TBD_
+Elegido: _TBD_ (en 1v1 con send, auto-countdown suele ir mejor).
 
 ## Leak mid-wave
 
 La ola no se “cancela”: creeps restantes siguen hasta exit o muerte.  
-Victoria de ola = todos spawneados + vivos = 0.
+Clear de ola en un lane ≠ clear en el otro.
