@@ -22,3 +22,5 @@ Thumbs.db
 
 # Game / local
 *.local
+.dev-pids.json
+.dev-logs/
