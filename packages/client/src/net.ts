@@ -1,7 +1,9 @@
 import { Client, Room } from "colyseus.js";
 import type { Intent, SimEvent, SimSnapshot } from "@linet/shared";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:2567";
+const SERVER_URL =
+  import.meta.env.VITE_SERVER_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "http://localhost:2567");
 
 /** XHR/network failures often surface as ProgressEvent with no useful message. */
 export function formatNetError(err: unknown): string {

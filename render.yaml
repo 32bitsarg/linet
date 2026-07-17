@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: linet
+    runtime: node
+    plan: free
+    buildCommand: npm install -g pnpm@9.15.0 && pnpm install && pnpm -r run build
+    startCommand: node packages/server/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: ""
+        # Optional: set to your custom domain if needed, e.g. https://linet.onrender.com
+    healthCheckPath: /health
