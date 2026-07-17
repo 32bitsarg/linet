@@ -3,7 +3,7 @@ services:
     name: linet
     runtime: node
     plan: free
-    buildCommand: npm install -g pnpm@9.15.0 && pnpm install && pnpm -r run build
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install && pnpm -r run build
     startCommand: node packages/server/dist/index.js
     envVars:
       - key: NODE_ENV
