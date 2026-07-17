@@ -1,7 +1,7 @@
 # Stack
 
-> **Estado:** en revisión  
-> ADR → [0002-stack-web-multi.md](../decisions/0002-stack-web-multi.md)
+> **Estado:** aprobado  
+> ADR → [0002-stack-web-multi.md](../decisions/0002-stack-web-multi.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Fase 1 — Web (MVP)
 
@@ -45,8 +45,11 @@ linet/
 > Detalle de módulos → [arquitectura.md](./arquitectura.md)  
 > Multiplayer → [../multiplayer/overview.md](../multiplayer/overview.md)
 
-## Preguntas abiertas (no bloquean el stack)
+## Preguntas abiertas resueltas
 
-1. ¿Top-down ortogonal o isométrico?
-2. ¿Hitscan o proyectiles con travel time?
-3. ¿Hosting MVP: un VPS / Railway / Fly.io / similar?
+1. **¿Top-down ortogonal o isométrico?** → **Top-down ortogonal** (más simple para slots, path y clicks).
+2. **¿Hitscan o proyectiles con travel time?** → **Hitscan** para el MVP (menos complejidad de sync; ver [../gameplay/combat.md](../gameplay/combat.md)).
+
+## Pregunta abierta pendiente
+
+1. ¿Hosting MVP: un VPS / Railway / Fly.io / similar? (no bloquea el stack)

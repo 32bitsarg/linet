@@ -1,19 +1,23 @@
 # UI / UX
 
-> **Estado:** borrador  
-> Multi → [../multiplayer/overview.md](../multiplayer/overview.md)
+> **Estado:** aprobado  
+> Multi → [../multiplayer/overview.md](../multiplayer/overview.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Pantallas
 
 | Pantalla | Contenido mínimo |
 |----------|------------------|
+| Loading | Logo, conectando a servidor |
 | Main menu | Jugar (multi), opciones, créditos |
-| Lobby | Crear room / unirse, 2 players, ready, start |
-| HUD partida | Oro, send points, vidas, ola, rival |
+| Create / Join room | Código corto de 4–6 caracteres, input de código, botón join |
+| Lobby | 2 players, ready, host start, color/nombre |
+| HUD partida | Oro, send points, vidas, ola actual, countdown, estado del rival |
 | Build bar | Torres + costo (gold) |
-| Send panel | 2–4 sends + costo (send points) + incoming banner |
-| Tower panel | Stats, upgrade, sell, targeting |
-| Disconnect | “Reconectando…” |
+| Send panel | 4 sends + costo (SP) + incoming banner |
+| Tower panel | Stats, upgrade, sell, targeting (post-MVP) |
+| Disconnect | “Reconectando…” / tiempo restante |
+| Rival disconnected | “Esperando rival…” / forfeit |
+| Error | Código inválido, sala llena, conexión fallida |
 | End screen | Winner, leaks/sends stats, rematch, leave |
 
 ## HUD — prioridades

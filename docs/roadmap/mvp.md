@@ -1,9 +1,10 @@
 # MVP — Primera versión jugable
 
-> **Estado:** borrador  
+> **Estado:** aprobado  
 > Visión → [../vision/producto.md](../vision/producto.md)  
 > Features → [features.md](./features.md)  
-> Multi → [../multiplayer/overview.md](../multiplayer/overview.md)
+> Multi → [../multiplayer/overview.md](../multiplayer/overview.md)  
+> Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Definición de “MVP listo”
 
@@ -17,7 +18,7 @@ Podés crear/entrar a una **room online** y completar una partida multijugador:
 6. Last standing (0 vidas = out) → resultados → lobby/menú.
 7. Reconexión básica si alguien se cae unos segundos.
 
-Sin meta-progresión, sin editor, sin ranked, sin coop (B).
+Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con travel time, sin interés.
 
 ## Pillar del MVP
 
@@ -93,20 +94,24 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B).
 | Múltiples mapas | Un mapa multi alcanza | next |
 | Cliente mobile nativo | Misma API después | later |
 
-## Números objetivo (rellenar)
+## Números objetivo (cerrados)
 
 | Parámetro | Objetivo |
 |-----------|----------|
 | Jugadores por room | **2 (1v1)** |
-| Duración de partida | ~__ min |
-| Vidas iniciales | __ |
-| Oro inicial | __ |
-| Send points iniciales | __ |
-| Torres distintas | 4–6 |
-| Sends distintos | 2–4 |
-| Olas | 8–12 |
+| Duración de partida | **~8 min** |
+| Vidas iniciales | **20** |
+| Oro inicial | **200** |
+| Send points iniciales | **80** |
+| Torres distintas | **5** |
+| Sends distintos | **4** |
+| Olas | **10** |
 | Mapa | 1 multi espejo (`line_01`) |
 | Variante multi | **A + C** (lanes + send) |
+| Perspectiva | **Top-down ortogonal** |
+| Combate | **Hitscan** |
+| Tick rate server | **20 Hz** |
+| Control de olas | **Auto-start con countdown** |
 
 ## Orden de implementación sugerido
 

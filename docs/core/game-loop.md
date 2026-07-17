@@ -1,6 +1,7 @@
 # Game loop y estados
 
-> **Estado:** borrador
+> **Estado:** aprobado  
+> Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Estados de sesión
 
@@ -18,9 +19,9 @@ boot → menu → loading → playing ⇄ paused → won | lost → menu
 
 ## Timestep
 
-- Preferencia: **fixed timestep** para simulación (ej. 20 o 30 Hz).
-- Render interpolado opcional.
-- Valor elegido: _TBD_
+- **Fixed timestep:** 20 Hz (50 ms por tick) en servidor y simulación compartida.
+- Cliente renderiza a 60 FPS con interpolación visual leve sobre el state recibido.
+- Tick rate cerrado en ADR 0004.
 
 ## Orden de update (por tick)
 
@@ -36,5 +37,7 @@ boot → menu → loading → playing ⇄ paused → won | lost → menu
 
 ## Pausas y “entre olas”
 
-- ¿Las olas arrancan solas o el jugador pulsa “Next wave”? _TBD_
-- ¿Hay interest entre olas? → ver [economy.md](../gameplay/economy.md)
+- **Auto-start con countdown:** cada ola comienza automáticamente 10 s después de que terminó la anterior.
+- El countdown se muestra en el HUD.
+- **No hay pausa en multiplayer.**
+- Interés entre olas: fuera del MVP.

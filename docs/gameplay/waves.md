@@ -1,6 +1,7 @@
 # Olas (waves)
 
-> **Estado:** borrador
+> **Estado:** aprobado  
+> Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Modelo
 
@@ -27,13 +28,15 @@ WaveEntry {
 
 ## Escalado
 
-| Factor | Cómo escala |
-|--------|-------------|
-| HP | |
-| Armor | |
-| Count | |
-| Speed | |
-| Gold reward | |
+| Factor | Fórmula por ola |
+|--------|-----------------|
+| HP base | ×1.15^ola |
+| Count | +1 cada 2 olas (empezando ola 3) |
+| Gold reward | ×1.08^ola |
+| Armor / MR | Sin escala en MVP |
+| Speed | Sin escala en MVP |
+
+Valores base y composición concreta en [../balance/mvp-values.md](../balance/mvp-values.md).
 
 ## Ritmo deseado
 
@@ -50,11 +53,11 @@ WaveEntry {
 
 ## Control de ola
 
-- [ ] Auto-start con countdown
-- [ ] Manual “Next wave” (ambos / host)
-- [ ] Híbrido (auto tras X segundos)
+- **Elegido:** auto-start con countdown de 10 s entre olas.
+- El countdown se muestra en el HUD.
+- Manual “Next wave” y híbrido: post-MVP.
 
-Elegido: _TBD_ (en 1v1 con send, auto-countdown suele ir mejor).
+Ver también [../core/game-loop.md](../core/game-loop.md).
 
 ## Leak mid-wave
 

@@ -1,7 +1,7 @@
 # Arquitectura
 
-> **Estado:** borrador  
-> Depende de: [stack.md](./stack.md) · Multi → [../multiplayer/overview.md](../multiplayer/overview.md)
+> **Estado:** aprobado  
+> Depende de: [stack.md](./stack.md) · Multi → [../multiplayer/overview.md](../multiplayer/overview.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Principio
 
@@ -66,9 +66,14 @@ StartNextWave { }          # según modo / host
 SetReady { ready: boolean }
 ```
 
+## Decisiones de arquitectura cerradas
+
+- **Modelo de entidades:** OOP por entidades con sistemas. ECS es overkill para el MVP; se reevalúa si el roster crece mucho.
+- **Tick rate del server:** **20 Hz** (50 ms por tick). Renders interpolan a 60 FPS.
+- **State sync:** Colyseus sincroniza el **state completo** de la sala (pequeño para 1v1). Eventos explícitos para feedback visual: `place`, `upgrade`, `sell`, `send`, `kill`, `leak`, `waveStart`.
+- **Currency:** **Dual currency** (gold + send points) — ver ADR 0003.
+
 ## Lo que todavía no definimos
 
-- ¿ECS, OOP por entidades, o híbrido?
-- ¿Tick rate del server (20/30 Hz)?
-- ¿Cuánto state se synca vs eventos (kill, place, send)?
-- ¿Gold-only o dual currency para sends? → [send.md](../multiplayer/send.md)
+- Reconexión extendida más allá de la ventana corta de Colyseus.
+- Replay / persistencia de partidas.

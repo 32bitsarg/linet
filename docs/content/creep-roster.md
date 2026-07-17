@@ -1,7 +1,7 @@
 # Roster de creeps (MVP)
 
-> **Estado:** borrador  
-> Olas → [../gameplay/waves.md](../gameplay/waves.md)
+> **Estado:** aprobado / primer tanteo  
+> Olas → [../gameplay/waves.md](../gameplay/waves.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Tags útiles
 
@@ -9,13 +9,15 @@
 
 ## Catálogo
 
-| id | Nombre | Tags | HP | Speed | Armor | MR | Gold | Notas | Estado |
-|----|--------|------|----|-------|-------|----|------|-------|--------|
-| `grub` | | swarm | | | | | | early filler | draft |
-| `runner` | | fast | | | | | | stress targeting | draft |
-| `brute` | | tank armored | | | | | | fuerza single DPS | draft |
-| `shade` | | magic-resist | | | | | | fuerza diversity | draft |
-| `boss_1` | | boss | | | | | | mid boss | draft |
+| id | Nombre | Tags | HP | Speed | Armor | MR | Gold | Leak dmg | Estado |
+|----|--------|------|----|-------|-------|----|------|----------|--------|
+| `grub` | Grub | swarm | 30 | 80 | 0 | 0 | 4 | 1 | playable |
+| `runner` | Runner | fast | 45 | 140 | 0 | 0 | 5 | 1 | playable |
+| `brute` | Brute | tank, armored | 180 | 50 | 20 | 0 | 12 | 3 | playable |
+| `shade` | Shade | magic-resist | 90 | 70 | 0 | 30 | 8 | 2 | playable |
+| `boss_1` | Boss | boss | 800 | 40 | 40 | 20 | 80 | 10 | playable |
+
+> HP base se escala ×1.15^ola. Gold reward ×1.08^ola. Ver [../balance/mvp-values.md](../balance/mvp-values.md).
 
 ## CreepDef (schema mental)
 
@@ -23,6 +25,8 @@
 CreepDef {
   id, name
   tags: string[]
+  hp, speed
+  armor, magicResist
   hp, speed
   armor, magicResist
   goldReward

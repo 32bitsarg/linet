@@ -1,7 +1,7 @@
 # Roster de torres (MVP)
 
-> **Estado:** borrador  
-> Reglas del sistema → [../gameplay/towers.md](../gameplay/towers.md)
+> **Estado:** aprobado / primer tanteo  
+> Reglas del sistema → [../gameplay/towers.md](../gameplay/towers.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Cómo llenar esta tabla
 
@@ -11,34 +11,59 @@
 
 ## Catálogo
 
-| id | Nombre | Rol | Costo | Range | DPS/atk | Tipo daño | Notas | Estado |
-|----|--------|-----|-------|-------|---------|-----------|-------|--------|
-| `arrow` | | anti-swarm / basic | | | | physical | starter | draft |
-| `cannon` | | AoE | | | | physical | splash | draft |
-| `frost` | | slow | | | | magical | CC | draft |
-| `sniper` | | single DPS | | | | physical | long range | draft |
-| `mage` | | anti-tank / magic | | | | magical | | draft |
-| _TBD_ | | support | | | | | aura? | draft |
+| id | Nombre | Rol | Costo | Range | Dmg | Interval | DPS | Tipo daño | Efecto | Estado |
+|----|--------|-----|-------|-------|-----|----------|-----|-----------|--------|--------|
+| `arrow` | Archer | anti-swarm / basic | 60 | 120 | 12 | 0.6 s | 20 | physical | — | playable |
+| `cannon` | Cannon | AoE | 100 | 100 | 25 | 1.5 s | 16.7 | physical | splash r=40 | playable |
+| `frost` | Frost | slow / CC | 80 | 110 | 8 | 1.0 s | 8 | magical | slow 30% / 2 s | playable |
+| `sniper` | Sniper | single DPS | 120 | 200 | 45 | 1.8 s | 25 | physical | long range | playable |
+| `mage` | Mage | anti-tank / magic | 100 | 130 | 22 | 1.0 s | 22 | magical | — | playable |
+
+> Upgrades lineales: L2 = +50% costo y stats; L3 = +100% costo y stats. Ver [../balance/mvp-values.md](../balance/mvp-values.md).
 
 ## Upgrades por torre
 
-### `arrow`
+Modelo MVP: **lineal** (L1 → L2 → L3). Ver reglas de multiplicador en [../balance/mvp-values.md](../balance/mvp-values.md).
 
-| Nivel | Costo | Cambios |
-|-------|-------|---------|
-| 1 | base | |
-| 2 | | |
-| 3 | | |
+### `arrow` (Archer)
+
+| Nivel | Costo acumulado | Dmg | DPS | Efecto |
+|-------|-----------------|-----|-----|--------|
+| 1 | 60 | 12 | 20 | — |
+| 2 | 90 | 18 | 30 | — |
+| 3 | 120 | 24 | 40 | — |
 
 ### `cannon`
 
-| Nivel | Costo | Cambios |
-|-------|-------|---------|
-| 1 | base | |
-| 2 | | |
-| 3 | | |
+| Nivel | Costo acumulado | Dmg | DPS | Splash |
+|-------|-----------------|-----|-----|--------|
+| 1 | 100 | 25 | 16.7 | r=40 |
+| 2 | 150 | 37 | 25 | r=40 |
+| 3 | 200 | 50 | 33.3 | r=50 |
 
-_(Repetir por torre…)_
+### `frost`
+
+| Nivel | Costo acumulado | Dmg | DPS | Slow |
+|-------|-----------------|-----|-----|------|
+| 1 | 80 | 8 | 8 | 30% / 2 s |
+| 2 | 120 | 12 | 12 | 40% / 2 s |
+| 3 | 160 | 16 | 16 | 50% / 2.5 s |
+
+### `sniper`
+
+| Nivel | Costo acumulado | Dmg | DPS | Range |
+|-------|-----------------|-----|-----|-------|
+| 1 | 120 | 45 | 25 | 200 |
+| 2 | 180 | 67 | 37 | 220 |
+| 3 | 240 | 90 | 50 | 250 |
+
+### `mage`
+
+| Nivel | Costo acumulado | Dmg | DPS | Notas |
+|-------|-----------------|-----|-----|-------|
+| 1 | 100 | 22 | 22 | mágico |
+| 2 | 150 | 33 | 33 | mágico |
+| 3 | 200 | 44 | 44 | mágico |
 
 ## Sinergias deseadas
 

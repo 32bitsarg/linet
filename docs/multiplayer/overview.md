@@ -1,8 +1,8 @@
 # Multijugador — overview
 
-> **Estado:** en revisión  
+> **Estado:** aprobado  
 > Stack → [../core/stack.md](../core/stack.md) · MVP → [../roadmap/mvp.md](../roadmap/mvp.md)  
-> Send → [send.md](./send.md)
+> Send → [send.md](./send.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Principio de producto
 
@@ -22,7 +22,7 @@ Una partida MVP = jugadores en una **room** Colyseus, cada uno en su lane, envi�
 1. Defendés tu línea.
 2. Clear eficiente → income / send charge.
 3. Mandás creeps al rival para romperle el timing.
-4. Quien se queda sin vidas pierde (last standing). Empate raro: least leaks o más olas sobrevividas — _definir tie-break_.
+4. Quien se queda sin vidas pierde (last standing). Empate: ver tie-break abajo.
 
 ### Jugadores
 
@@ -78,9 +78,25 @@ StartNextWave { }     # si el modo lo permite
 - Spectators
 - Cliente mobile nativo
 
-## Open questions
+## Tie-break
 
-1. ¿Tie-break si ambos mueren en el mismo tick?
-2. ¿Host migra si se cae el creador?
-3. ¿Pause? (recomendación: **no** en multi)
-4. ¿Bots para practicar sends offline en room de 1?
+Si ambos jugadores llegan a 0 vidas en el mismo tick server:
+
+1. Vidas restantes justo antes del leak fatal (si difieren).
+2. Menor cantidad de leaks totales acumulados.
+3. Mayor oro acumulado.
+4. Si persisten: **sudden death** — 1 vida + ola especial hasta que alguien leak.
+
+## Reglas de desconexión
+
+- **Ventana corta:** Colyseus permite rejoin durante ~30 s. La partida se congela visualmente para el desconectado; el otro jugador ve “rival desconectado”.
+- **Si no vuelve:** el jugador conectado gana por forfeit; el desconectado pierde.
+- **Host migration:** no aplica en MVP. Colyseus server es la autoridad; el “host” del lobby solo puede iniciar la partida, no posee estado.
+
+## Pause
+
+- **No hay pausa en multiplayer.** El countdown entre olas es la única pausa programada.
+
+## Bots / offline
+
+- Fuera del MVP. Post-MVP se evalúa un bot básico para practicar sends en una room de 1.

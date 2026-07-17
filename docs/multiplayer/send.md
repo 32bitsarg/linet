@@ -1,7 +1,7 @@
 # Send / income (variante C)
 
-> **Estado:** borrador  
-> Overview multi → [overview.md](./overview.md) · Economía → [../gameplay/economy.md](../gameplay/economy.md)
+> **Estado:** aprobado  
+> Overview multi → [overview.md](./overview.md) · Economía → [../gameplay/economy.md](../gameplay/economy.md) · Balance → [../balance/mvp-values.md](../balance/mvp-values.md) · ADR 0003 → [../decisions/0003-economia-dual.md](../decisions/0003-economia-dual.md)
 
 ## Idea
 
@@ -10,25 +10,23 @@ Eso convierte defensa buena en presión ofensiva (fantasía Line TD / custom WC3
 
 ## Modelo propuesto (MVP)
 
-### Dual currency (simple)
+### Dual currency (MVP)
 
 | Recurso | Para qué | Cómo se gana |
 |---------|----------|--------------|
-| **Gold** | Torres / upgrades / sell | Kills, fin de ola, (interés post-MVP) |
-| **Send points** (o “income”) | Comprar envíos al rival | Por kill, por ola clear, o income pasivo por tick/ola |
+| **Gold** | Torres / upgrades / sell | Kills |
+| **Send points** (SP) | Comprar envíos al rival | Kills (50% del gold reward), clear de ola (+20 SP), pasivo (+2 SP/s) |
 
-Alternativa más chica: **solo gold** y los sends se compran con oro.  
-**Preferencia MVP:** _TBD — gold-only vs gold + send points_.  
-Recomendación: **gold + send points** para no vaciar defensa al atacar.
+**Decisión:** `gold + send points` — ver ADR 0003. Esto evita vaciar defensa al atacar y permite balancear sends por separado.
 
-### Catálogo de sends (borrador)
+### Catálogo de sends (MVP)
 
-| id | Qué envía | Costo (send pts) | Notas |
-|----|-----------|------------------|-------|
-| `send_swarm` | N creeps swarm | bajo | spam early |
-| `send_tank` | 1 tank | medio | fuerza single-target |
-| `send_fast` | N runners | medio | stress + leaks |
-| `send_boss` | mini-boss | alto / unlock late | 1–2 por partida |
+| id | Creeps enviados | Costo SP | Min wave | Cooldown |
+|----|-----------------|----------|----------|----------|
+| `send_swarm` | 3× grub | 20 | 1 | 5 s |
+| `send_fast` | 2× runner | 35 | 2 | 6 s |
+| `send_tank` | 1× brute | 60 | 4 | 8 s |
+| `send_boss` | 1× shade + 1× brute | 120 | 6 | 12 s |
 
 Los creeps de send usan defs del [creep-roster](../content/creep-roster.md) con tag `sendable` o un `SendDef` que referencia `creepId`.
 
@@ -74,9 +72,19 @@ Si más adelante queremos “leak = dump al rival”, va a backlog con mucho cui
 - Feedback en el lane rival: banner “Incoming send”.
 - Contador de send points junto al oro.
 
+## Reglas de send (cerradas)
+
+1. Solo podés enviar al **rival** (1v1 MVP).
+2. Los creeps enviados spawnean en la **cola del spawn del lane rival**.
+3. Leak de un creep enviado: resta vidas al **defensor**.
+4. Kill de un creep enviado: gold + SP para el **defensor**.
+5. No podés enviar si el rival ya está eliminado.
+6. Cooldown por `SendDef` para evitar flood.
+7. Los sends **no** cuentan para el clear de ola del rival; son independientes de la wave clock.
+
 ## Open questions
 
-1. Gold-only vs dual currency.
-2. ¿Income pasivo por segundo o solo por kill/ola?
-3. ¿Cap de creeps vivos por lane (anti-lag / anti-flood)?
-4. ¿Los sends cuentan para “fin de ola” del rival o son independientes de la wave clock?
+1. ¿Cap de creeps vivos por lane (anti-lag / anti-flood)?
+2. ¿Bots para practicar sends en room de 1?
+
+Respuesta tentativa: no hay cap en MVP; se mide en playtests. Bots: post-MVP.

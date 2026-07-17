@@ -10,8 +10,9 @@ Juego tipo *Line Tower Defense* (estilo mapa de Warcraft III).
 3. Fijá el stack en [core/stack.md](./core/stack.md) (Phaser + Colyseus).
 4. Cerrá reglas multi en [multiplayer/overview.md](./multiplayer/overview.md).
 5. Cerrá sistemas de juego en `gameplay/` y contenido en `content/`.
-6. Registrá decisiones importantes en `decisions/` (ADRs).
-7. Recién después: código según [core/arquitectura.md](./core/arquitectura.md).
+6. Mirá los **valores de balance** en [balance/mvp-values.md](./balance/mvp-values.md).
+7. Registrá decisiones importantes en `decisions/` (ADRs).
+8. Recién después: código según [core/arquitectura.md](./core/arquitectura.md).
 
 ## Índice
 
@@ -23,6 +24,7 @@ Juego tipo *Line Tower Defense* (estilo mapa de Warcraft III).
 | [core/](./core/) | Stack, arquitectura, game loop, estados |
 | [gameplay/](./gameplay/) | Economía, combate, path, olas |
 | [content/](./content/) | Catálogos: torres, creeps, mapas |
+| [balance/](./balance/) | Valores numéricos de primer tanteo |
 | [modes/](./modes/) | Modos de juego (classic, random, etc.) |
 | [ui/](./ui/) | Pantallas, HUD, flujos |
 | [decisions/](./decisions/) | Decisiones técnicas (ADR) |

@@ -1,6 +1,7 @@
 # Combate
 
-> **Estado:** borrador
+> **Estado:** aprobado  
+> Balance → [../balance/mvp-values.md](../balance/mvp-values.md)
 
 ## Daño
 
@@ -19,13 +20,25 @@
 | Evasion | Chance de miss (opcional) |
 | Spell immunity | Bloquea CC mágico (bosses) |
 
-## Fórmulas (rellenar)
+## Fórmula de daño
+
+Daño **hitscan** (sin travel time de proyectil).
 
 ```
-damage_final = max(1, damage_raw * mitigation(armor, damage_type))
+damage_final = max(1, floor(damage_raw * (1 - defense / (defense + 100))))
 ```
 
-Mitigación concreta: _TBD_ (lineal, % por punto, diminishing returns…).
+- `defense` = `armor` para daño físico, `magicResist` para daño mágico.
+- Pure / True damage ignora defense.
+- Ejemplo: 20 armor reduce ~16.7% del daño físico; 100 armor reduce 50%.
+
+| defense | Mitigación aproximada |
+|---------|------------------------|
+| 0 | 0% |
+| 20 | 16.7% |
+| 50 | 33.3% |
+| 100 | 50% |
+| 200 | 66.7% |
 
 ## Targeting
 
@@ -51,5 +64,7 @@ Default global MVP: **First**.
 
 ## Proyectiles
 
-- Hitscan vs proyectil con travel time — _TBD_
-- ¿Pueden miss por muerte del target mid-flight? Preferencia: sí, o retarget — _TBD_
+- **MVP: hitscan.** La torre dispara y el daño se aplica inmediatamente al target válido en ese tick.
+- No hay travel time, no hay miss por muerte mid-flight.
+- Proyectiles visuales (si los usamos) son **puramente cosméticos**; no afectan la simulación.
+- Travel time real: post-MVP si se justifica.
