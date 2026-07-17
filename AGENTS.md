@@ -6,7 +6,7 @@ Entry point for AI agents working on this repo. Read this before changing code.
 
 **Linet** = Line Tower Wars (Warcraft-style), not fixed-path Line TD.
 
-- 1v1 online (Colyseus). Solo mode = human + passive bot.
+- 1v1 online (Colyseus). Solo mode = human + bot that builds a simple maze (no sends).
 - Each player owns a **vertical maze grid**. Towers **block cells**; creeps **A\*** spawn → exit.
 - Place that seals the route is **rejected** (`placeRejected`).
 - Dual currency: gold (towers) + send points (sends to rival).

@@ -106,6 +106,8 @@ export interface PublicPlayer {
   totalLeaks: number;
   totalGoldEarned: number;
   eliminated: boolean;
+  /** Sim time until which each sendId is on cooldown */
+  sendCooldownUntil: Record<string, number>;
 }
 
 export interface CreepState {

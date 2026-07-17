@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { MAP, TOWERS, type SimSnapshot } from "@linet/shared";
+import { MAP, SENDS, TOWERS, towerCombatAtLevel, type SimSnapshot } from "@linet/shared";
 import { net } from "../net";
 import {
   createBadge,
@@ -8,6 +8,7 @@ import {
   createIconText,
   createPanel,
   createStyledText,
+  setButtonDisabled,
   UI,
 } from "../ui/UIFactory";
 
@@ -17,6 +18,22 @@ const TOWER_COLORS: Record<string, number> = {
   frost: 0x6ab0d8,
   sniper: 0xb0b0b0,
   mage: 0x9b6ad8,
+};
+
+const TOWER_BORDER: Record<string, number> = {
+  arrow: 0xa5d6a7,
+  cannon: 0xffb74d,
+  frost: 0x81d4fa,
+  sniper: 0xe0e0e0,
+  mage: 0xce93d8,
+};
+
+const TOWER_LETTER: Record<string, string> = {
+  arrow: "A",
+  cannon: "C",
+  frost: "F",
+  sniper: "S",
+  mage: "M",
 };
 
 const CREEP_COLORS: Record<string, number> = {
@@ -173,12 +190,32 @@ export class GameScene extends Phaser.Scene {
       });
 
       this.add
+        .text(spawnX + lane.cellSize / 2, spawnY - 8, "ENTRADA", {
+          fontFamily: "Bebas Neue, Impact, sans-serif",
+          fontSize: "11px",
+          color: "#a5d6a7",
+          letterSpacing: 1,
+        })
+        .setOrigin(0.5, 1)
+        .setDepth(3);
+
+      this.add
         .text(spawnX + lane.cellSize / 2, spawnY + lane.cellSize / 2, "↓", {
           fontFamily: "Bebas Neue, Impact, sans-serif",
-          fontSize: "20px",
+          fontSize: "18px",
           color: "#d8f5d8",
         })
         .setOrigin(0.5)
+        .setDepth(3);
+
+      this.add
+        .text(exitX + lane.cellSize / 2, exitY + lane.cellSize + 8, "SALIDA", {
+          fontFamily: "Bebas Neue, Impact, sans-serif",
+          fontSize: "11px",
+          color: "#ef9a9a",
+          letterSpacing: 1,
+        })
+        .setOrigin(0.5, 0)
         .setDepth(3);
 
       this.add
@@ -366,6 +403,43 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private refreshSendPanel() {
+    if (!this.state) return;
+    const me = this.me();
+    if (!me) return;
+
+    for (const btn of this.sendButtons) {
+      const def = SENDS.find((s) => s.id === btn.id);
+      if (!def) continue;
+      const name = def.id.replace("send_", "").toUpperCase();
+      let label = `${name}\n${def.costSendPoints} SP`;
+      let disabled = false;
+      const cdUntil = me.sendCooldownUntil[def.id] ?? 0;
+      const cdLeft = cdUntil - this.state.time;
+
+      if (this.state.waveIndex < def.minWave) {
+        disabled = true;
+        label = `${name}\nOLA ${def.minWave}+`;
+      } else if (cdLeft > 0) {
+        disabled = true;
+        label = `${name}\nCD ${Math.ceil(cdLeft)}s`;
+      } else if (me.sendPoints < def.costSendPoints) {
+        disabled = true;
+        label = `${name}\nSP`;
+      }
+
+      setButtonDisabled(btn.container, disabled, {
+        label,
+        enabledStyle: {
+          color: 0x4a2522,
+          borderColor: UI.colors.red,
+          textColor: UI.colors.redText,
+        },
+        onClick: () => net.sendIntent({ type: "sendCreeps", sendId: def.id }),
+      });
+    }
+  }
+
   private createTowerPanel() {
     const { width } = this.scale;
     const panelWidth = 150;
@@ -422,11 +496,22 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     const def = TOWERS.find((t) => t.id === tower.towerId);
-    const stats = def
-      ? `Lvl ${tower.level} · ${def.name}\nRng ${Math.round(def.range)} · Dmg ${def.damage}`
-      : `Lvl ${tower.level}`;
-    this.towerPanelTitle.setText(def?.name.toUpperCase() ?? "TORRE");
-    this.towerPanelStats.setText(stats);
+    if (!def) {
+      this.towerPanelTitle.setText("TORRE");
+      this.towerPanelStats.setText(`Lvl ${tower.level}`);
+      this.towerPanel.setVisible(true);
+      return;
+    }
+    const stats = towerCombatAtLevel(def, tower.level);
+    const slow =
+      stats.slowPercent > 0
+        ? `\nSlow ${Math.round(stats.slowPercent * 100)}% / ${stats.slowDuration}s`
+        : "";
+    const splash = stats.splashRadius > 0 ? `\nSplash r=${stats.splashRadius}` : "";
+    this.towerPanelTitle.setText(def.name.toUpperCase());
+    this.towerPanelStats.setText(
+      `Lvl ${tower.level} · ${def.name}\nRng ${Math.round(stats.range)} · Dmg ${Math.round(stats.damage)}${splash}${slow}`,
+    );
     this.towerPanel.setVisible(true);
   }
 
@@ -446,7 +531,8 @@ export class GameScene extends Phaser.Scene {
     if (existing) {
       this.selectedInstanceId = existing.id;
       const def = TOWERS.find((t) => t.id === existing.towerId);
-      this.rangeCircle.setPosition(existing.x, existing.y).setRadius(def?.range ?? 100).setVisible(true);
+      const range = def ? towerCombatAtLevel(def, existing.level).range : 100;
+      this.rangeCircle.setPosition(existing.x, existing.y).setRadius(range).setVisible(true);
       return;
     }
 
@@ -492,27 +578,36 @@ export class GameScene extends Phaser.Scene {
     for (const tower of this.state.towers) {
       let gfx = this.towerGfx.get(tower.id);
       if (!gfx) {
-        const base = this.add.rectangle(0, 2, 32, 30, 0x2a3228).setStrokeStyle(1, 0xd8c49a, 0.4);
+        const border = TOWER_BORDER[tower.towerId] ?? 0xd8c49a;
+        const base = this.add.rectangle(0, 2, 32, 30, 0x2a3228).setStrokeStyle(2, border, 0.9);
         const body = this.add.rectangle(0, -2, 26, 26, TOWER_COLORS[tower.towerId] ?? 0x888888);
-        const lvl = this.add
-          .text(0, -2, String(tower.level), {
+        const letter = this.add
+          .text(-8, -10, TOWER_LETTER[tower.towerId] ?? "?", {
             fontFamily: "Bebas Neue, Impact, sans-serif",
-            fontSize: "14px",
+            fontSize: "11px",
             color: "#111",
           })
           .setOrigin(0.5);
-        gfx = this.add.container(tower.x, tower.y, [base, body, lvl]).setDepth(30).setSize(34, 34);
+        const lvl = this.add
+          .text(8, -10, String(tower.level), {
+            fontFamily: "Bebas Neue, Impact, sans-serif",
+            fontSize: "12px",
+            color: "#111",
+          })
+          .setOrigin(0.5);
+        gfx = this.add.container(tower.x, tower.y, [base, body, letter, lvl]).setDepth(30).setSize(34, 34);
         body.setInteractive({ useHandCursor: true });
         body.on("pointerdown", () => {
           const me = this.me();
           if (!me || tower.laneIndex !== me.laneIndex) return;
           this.selectedInstanceId = tower.id;
           const def = TOWERS.find((t) => t.id === tower.towerId);
-          this.rangeCircle.setPosition(tower.x, tower.y).setRadius(def?.range ?? 100).setVisible(true);
+          const range = def ? towerCombatAtLevel(def, tower.level).range : 100;
+          this.rangeCircle.setPosition(tower.x, tower.y).setRadius(range).setVisible(true);
         });
         this.towerGfx.set(tower.id, gfx);
       }
-      const lvlText = gfx.list[2] as Phaser.GameObjects.Text;
+      const lvlText = gfx.list[3] as Phaser.GameObjects.Text;
       lvlText.setText(String(tower.level));
       gfx.setPosition(tower.x, tower.y);
     }
@@ -555,12 +650,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (rival) {
-      this.rivalText
-        .setText(`RIVAL: ${rival.name}  ${rival.lives}❤${this.state.soloMode ? " (bot)" : ""}`)
-        .setColor(UI.colors.redText);
+      if (this.state.soloMode) {
+        this.rivalText.setText(`RIVAL: ${rival.name}  ${rival.lives}❤ (bot)`).setColor(UI.colors.redText);
+      } else if (!rival.connected) {
+        this.rivalText
+          .setText(`RIVAL: ${rival.name}  ${rival.lives}❤ · DESCONECTADO`)
+          .setColor("#9aa898");
+      } else {
+        this.rivalText.setText(`RIVAL: ${rival.name}  ${rival.lives}❤`).setColor(UI.colors.redText);
+      }
     } else {
       this.rivalText.setText("");
     }
+
+    this.refreshSendPanel();
 
     this.towerHintText.setText(
       this.selectedInstanceId

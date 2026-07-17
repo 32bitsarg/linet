@@ -36,3 +36,20 @@ test("reject place on foreign lane cell still uses ownership", () => {
   sim.enqueueIntent("a", { type: "placeTower", col: 1, row: 1, towerId: "arrow" });
   assert.equal(sim.towers[0]?.laneIndex, 0);
 });
+
+test("solo bot builds at least one tower over time", () => {
+  const sim = new Simulation("SOLO1");
+  sim.addPlayer("a", "A");
+  sim.enableSoloWithBot();
+  sim.enqueueIntent("a", { type: "setReady", ready: true });
+  sim.enqueueIntent("a", { type: "startGame" });
+  assert.equal(sim.phase, "playing");
+
+  const bot = sim.players.get("__bot__");
+  assert.ok(bot);
+  bot!.gold = 9999;
+
+  for (let i = 0; i < 80; i++) sim.step(); // ~4s at 20Hz, bot ticks every 2.5s
+  const botTowers = sim.towers.filter((t) => t.laneIndex === bot!.laneIndex);
+  assert.ok(botTowers.length >= 1);
+});
