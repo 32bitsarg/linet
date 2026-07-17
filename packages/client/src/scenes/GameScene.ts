@@ -78,8 +78,8 @@ export class GameScene extends Phaser.Scene {
       ease: "Sine.easeInOut",
     });
 
-    this.add.rectangle(0, 640, width, 80, 0x080c09, 0.96).setOrigin(0).setDepth(5);
-    this.add.rectangle(0, 640, width, 2, 0xd8c49a, 0.25).setOrigin(0).setDepth(6);
+    this.add.rectangle(0, height - 56, width, 56, 0x080c09, 0.96).setOrigin(0).setDepth(5);
+    this.add.rectangle(0, height - 56, width, 2, 0xd8c49a, 0.25).setOrigin(0).setDepth(6);
 
     this.laneLabelLeft = this.add
       .text(MAP.lanes[0]!.originX, 14, "TU LÍNEA", {
@@ -210,18 +210,18 @@ export class GameScene extends Phaser.Scene {
       .setDepth(25);
 
     // Top HUD bar
-    createPanel(this, width / 2, 36, width - 24, 56, {
+    createPanel(this, width / 2, 32, width - 16, 48, {
       color: UI.colors.darkBg,
       alpha: 0.92,
       borderColor: UI.colors.panelBorder,
     });
-    this.waveBadge = createBadge(this, 64, 36, "OLA 0/10", UI.colors.gold);
-    this.countdownText = createStyledText(this, 120, 28, "", "small");
-    this.livesText = createIconText(this, 280, 28, "❤", "20", UI.colors.redText);
-    this.goldText = createIconText(this, 380, 28, "●", "200", UI.colors.goldText);
-    this.spText = createIconText(this, 490, 28, "⚡", "80", UI.colors.blueText);
-    this.rivalText = createStyledText(this, width - 220, 28, "", "body");
-    this.towerHintText = createStyledText(this, width / 2, 62, "", "small");
+    this.waveBadge = createBadge(this, 54, 32, "OLA 0/10", UI.colors.gold);
+    this.countdownText = createStyledText(this, 102, 26, "", "small");
+    this.livesText = createIconText(this, 240, 26, "❤", "20", UI.colors.redText);
+    this.goldText = createIconText(this, 320, 26, "●", "200", UI.colors.goldText);
+    this.spText = createIconText(this, 410, 26, "⚡", "80", UI.colors.blueText);
+    this.rivalText = createStyledText(this, width - 160, 26, "", "body");
+    this.towerHintText = createStyledText(this, width / 2, 54, "", "small");
 
     this.banner = createBanner(this, width, height);
 
@@ -305,17 +305,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createBuildBar() {
-    const startX = 140;
-    const y = 668;
-    const gap = 92;
+    const { height } = this.scale;
+    const startX = 64;
+    const y = height - 38;
+    const gap = 74;
     TOWERS.forEach((t, i) => {
       const x = startX + i * gap;
       const btn = createButton(this, x, y, `${t.name}\n$${t.cost}`, {
-        width: 84,
-        height: 48,
+        width: 70,
+        height: 40,
         color: TOWER_COLORS[t.id] ?? 0x888888,
         textColor: UI.colors.textDark,
-        fontSize: "11px",
+        fontSize: "10px",
         selected: t.id === this.selectedTowerId,
         onClick: () => {
           this.selectedTowerId = t.id;
@@ -340,24 +341,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createSendPanel() {
+    const { width, height } = this.scale;
     const sends = [
       { id: "send_swarm", label: "SWARM\n20 SP" },
       { id: "send_fast", label: "FAST\n35 SP" },
       { id: "send_tank", label: "TANK\n60 SP" },
       { id: "send_boss", label: "BOSS\n120 SP" },
     ];
-    const startX = 1030;
-    const y = 668;
-    const gap = 92;
+    const startX = width - 64;
+    const y = height - 38;
+    const gap = 74;
     sends.forEach((s, i) => {
-      const x = startX + i * gap;
+      const x = startX - i * gap;
       const btn = createButton(this, x, y, s.label, {
-        width: 84,
-        height: 48,
+        width: 70,
+        height: 40,
         color: 0x4a2522,
         borderColor: UI.colors.red,
         textColor: UI.colors.redText,
-        fontSize: "11px",
+        fontSize: "10px",
         onClick: () => net.sendIntent({ type: "sendCreeps", sendId: s.id }),
       });
       this.sendButtons.push({ id: s.id, container: btn });
@@ -365,35 +367,39 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createTowerPanel() {
-    const width = 170;
-    const height = 110;
-    const x = 640;
-    const y = 80;
-    createPanel(this, x, y, width, height, { color: UI.colors.panelBg, alpha: 0.95 });
-    this.towerPanelTitle = createStyledText(this, x - width / 2 + 12, y - height / 2 + 10, "TORRE", "body", UI.colors.goldText);
-    this.towerPanelStats = createStyledText(this, x - width / 2 + 12, y - height / 2 + 32, "", "small");
-    const upBtn = createButton(this, x - 42, y + 34, "UPGRADE [U]", {
-      width: 80,
-      height: 26,
+    const { width } = this.scale;
+    const panelWidth = 150;
+    const panelHeight = 96;
+    const x = width - panelWidth / 2 - 10;
+    const y = 84;
+    const bg = this.add
+      .rectangle(0, 0, panelWidth, panelHeight, UI.colors.panelBg, 0.95)
+      .setStrokeStyle(1, UI.colors.panelBorder)
+      .setDepth(UI.z.panels);
+    this.towerPanelTitle = createStyledText(this, -panelWidth / 2 + 10, -panelHeight / 2 + 10, "TORRE", "body", UI.colors.goldText);
+    this.towerPanelStats = createStyledText(this, -panelWidth / 2 + 10, -panelHeight / 2 + 30, "", "small");
+    const upBtn = createButton(this, -36, 28, "UPGRADE [U]", {
+      width: 68,
+      height: 24,
       color: UI.colors.green,
       textColor: UI.colors.textDark,
-      fontSize: "10px",
+      fontSize: "9px",
       onClick: () => {
         if (this.selectedInstanceId) net.sendIntent({ type: "upgradeTower", towerInstanceId: this.selectedInstanceId });
       },
     });
-    const sellBtn = createButton(this, x + 42, y + 34, "SELL [S]", {
-      width: 76,
-      height: 26,
+    const sellBtn = createButton(this, 36, 28, "SELL [S]", {
+      width: 64,
+      height: 24,
       color: UI.colors.red,
       textColor: UI.colors.textDark,
-      fontSize: "10px",
+      fontSize: "9px",
       onClick: () => {
         if (this.selectedInstanceId) net.sendIntent({ type: "sellTower", towerInstanceId: this.selectedInstanceId });
       },
     });
     this.towerPanel = this.add
-      .container(x, y, [this.towerPanelTitle, this.towerPanelStats, upBtn, sellBtn])
+      .container(x, y, [bg, this.towerPanelTitle, this.towerPanelStats, upBtn, sellBtn])
       .setDepth(UI.z.panels)
       .setVisible(false);
 
