@@ -1,0 +1,15 @@
+---
+description: Linet monorepo map and hard rules for agents
+alwaysApply: true
+---
+
+# Linet architecture
+
+- Read `AGENTS.md` first. Game = Line Tower Wars (maze grids + A*), not fixed-path Line TD.
+- Packages: `shared` (authoritative sim) → `server` (Colyseus) → `client` (Phaser render/input only).
+- Intents: client → `GameRoom` → `Simulation`; never decide combat/economy in the client.
+- Place towers with `{ col, row, towerId }`; reject if path spawn→exit is sealed.
+- Logic changes go in `packages/shared/src/sim/` or `content/`; UI in `packages/client/src/scenes/`.
+- Keep `content/*.json` in sync when editing shared content data.
+- Design docs live in `docs/` (Spanish); update them with behavior changes.
+- Prefer small focused files; do not grow a second mega-`scenes.ts` or invent unused “System” classes.

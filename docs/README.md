@@ -1,37 +1,38 @@
 # Linet — Documentación
 
-Documentación de diseño y arquitectura **antes de código**.  
-Juego tipo *Line Tower Defense* (estilo mapa de Warcraft III).
+Diseño y arquitectura del juego (**Line Tower Wars**).  
+Mapa para agentes de código: [`../AGENTS.md`](../AGENTS.md).
 
 ## Cómo usar esta carpeta
 
-1. Empezá por [visión/producto.md](./vision/producto.md) — qué es Linet y qué no es.
-2. Cerrá alcance en [roadmap/mvp.md](./roadmap/mvp.md) y el catálogo en [roadmap/features.md](./roadmap/features.md).
-3. Fijá el stack en [core/stack.md](./core/stack.md) (Phaser + Colyseus).
-4. Cerrá reglas multi en [multiplayer/overview.md](./multiplayer/overview.md).
-5. Cerrá sistemas de juego en `gameplay/` y contenido en `content/`.
-6. Mirá los **valores de balance** en [balance/mvp-values.md](./balance/mvp-values.md).
-7. Registrá decisiones importantes en `decisions/` (ADRs).
-8. Recién después: código según [core/arquitectura.md](./core/arquitectura.md).
+1. [visión/producto.md](./vision/producto.md) — qué es Linet y qué no es.
+2. [roadmap/mvp.md](./roadmap/mvp.md) y [roadmap/features.md](./roadmap/features.md) — alcance.
+3. [core/stack.md](./core/stack.md) + [core/arquitectura.md](./core/arquitectura.md) — stack y mapa de código.
+4. [multiplayer/overview.md](./multiplayer/overview.md) — rooms, lanes, sends.
+5. `gameplay/` + `content/` — reglas y catálogos.
+6. [balance/mvp-values.md](./balance/mvp-values.md) — números.
+7. `decisions/` — ADRs.
+
+Si el código y un doc discrepan, **actualizá el doc** (o el código) en el mismo cambio.
 
 ## Índice
 
 | Área | Qué define |
 |------|------------|
-| [vision/](./vision/) | Producto, pillars, audiencia |
-| [roadmap/](./roadmap/) | MVP, features, backlog / próximas |
-| [multiplayer/](./multiplayer/) | Rooms, lanes A, send C, autoridad (pillar MVP) |
-| [core/](./core/) | Stack, arquitectura, game loop, estados |
-| [gameplay/](./gameplay/) | Economía, combate, path, olas |
-| [content/](./content/) | Catálogos: torres, creeps, mapas |
-| [balance/](./balance/) | Valores numéricos de primer tanteo |
-| [modes/](./modes/) | Modos de juego (classic, random, etc.) |
-| [ui/](./ui/) | Pantallas, HUD, flujos |
-| [decisions/](./decisions/) | Decisiones técnicas (ADR) |
+| [vision/](./vision/) | Producto, pillars |
+| [roadmap/](./roadmap/) | MVP, features, backlog |
+| [multiplayer/](./multiplayer/) | Rooms, lanes, send |
+| [core/](./core/) | Stack, arquitectura, game loop |
+| [gameplay/](./gameplay/) | Economía, combate, laberinto, olas |
+| [content/](./content/) | Torres, creeps, mapas |
+| [balance/](./balance/) | Valores de primer tanteo |
+| [modes/](./modes/) | Classic, random, etc. |
+| [ui/](./ui/) | Pantallas, HUD |
+| [decisions/](./decisions/) | ADRs |
 
 ## Convención
 
-- Un tema = un archivo. Evitar “mega-docs” que mezclan stack + torres + UI.
+- Un tema = un archivo.
 - Cada doc empieza con **Estado** (`borrador` / `en revisión` / `aprobado`).
-- Números y fórmulas van en tablas; narrativa corta.
-- Si algo cambia el balance o la arquitectura, actualizá el doc **antes** o **junto** al cambio de código.
+- Números en tablas; narrativa corta.
+- Código en inglés; docs de diseño en español.

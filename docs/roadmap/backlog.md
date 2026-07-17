@@ -25,7 +25,7 @@ Orden tentativo — reordenar cuando el MVP esté jugable.
 |----|---------|-------|
 | `mode-random` | Modo random/draft | Cuando el roster sea ≥8–10 torres |
 | `mode-endless` | Endless | Necesita escalado de olas |
-| `map-second` | Segundo mapa | Variar curvatura / densidad de slots |
+| `map-second` | Segundo mapa | Variar tamaño / densidad de grilla |
 | `flying-creeps` | Aéreos + anti-air | Cambia targeting y roster |
 | `status-dot` | DoTs | Balance + VFX |
 | `meta-unlocks` | Unlocks persistentes | Cuenta / save global |

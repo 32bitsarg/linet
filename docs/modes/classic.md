@@ -5,9 +5,9 @@
 
 ## Idea
 
-Partida **1v1** Line TD en room online:
+Partida **1v1** Line Tower Wars en room online:
 
-- **A:** cada jugador su lane (path + slots).
+- **A:** cada jugador su laberinto (grilla + pathfinding).
 - **C:** sends manuales al lane rival.
 - Olas base **espejo** en ambos lanes.
 

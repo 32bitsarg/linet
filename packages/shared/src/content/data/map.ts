@@ -1,0 +1,35 @@
+import type { MapDef } from "../../types.js";
+
+/** 1v1 Line Tower Wars: two vertical maze lanes side by side. */
+export const MAP: MapDef = {
+  id: "line_01",
+  name: "Twin Mazes",
+  width: 1280,
+  height: 720,
+  lanes: [
+    {
+      id: "lane_0",
+      originX: 60,
+      originY: 48,
+      cols: 12,
+      rows: 14,
+      cellSize: 40,
+      spawnCol: 5,
+      spawnRow: 0,
+      exitCol: 5,
+      exitRow: 13,
+    },
+    {
+      id: "lane_1",
+      originX: 740,
+      originY: 48,
+      cols: 12,
+      rows: 14,
+      cellSize: 40,
+      spawnCol: 6,
+      spawnRow: 0,
+      exitCol: 6,
+      exitRow: 13,
+    },
+  ],
+};

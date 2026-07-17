@@ -31,11 +31,11 @@
 ## Interacciones clave
 
 - Lobby: create / paste code / ready.
-- Click slot vacío propio → place (slots ajenos no buildables).
+- Click celda vacía propia → place (celdas ajenas / sellar path no buildables).
 - Click torre propia → upgrade/sell.
-- Hotkeys (post-MVP inmediato): `1–6` torres, `U` upgrade, `S` sell.
+- Hotkeys: `U` upgrade, `S` sell, `ESC` deselect.
 
 ## Accesibilidad / claridad
 
-- Contraste fuerte path vs build area vs lanes de otros jugadores.
+- Contraste fuerte grilla vs fondo; spawn (verde) / exit (rojo) visibles.
 - Identidad de color/nombre por jugador estable en lobby y partida.

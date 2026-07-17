@@ -6,6 +6,7 @@ dist/
 build/
 .cache/
 *.log
+*.tsbuildinfo
 
 # Env / secrets
 .env

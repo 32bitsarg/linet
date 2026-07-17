@@ -1,17 +1,38 @@
 # Linet
 
-Tower defense tipo **Line TD** multijugador (camino fijo + build slots), inspirado en mapas de Warcraft III.
+**Line Tower Wars** multijugador 1v1 (laberintos + sends), inspirado en mapas de Warcraft III.
 
-## Estado del proyecto
+## Stack
 
-Fase actual: **documentación de diseño** (sin código de juego todavía).
+- TypeScript monorepo (`pnpm`)
+- Cliente: Phaser 3 + Vite
+- Servidor: Colyseus + Node
+- Simulación shared autoritativa a 20 Hz
 
-- MVP: **web + multijugador online** (Phaser 3 + Colyseus)
-- Docs: [`docs/README.md`](./docs/README.md)
+## Para agentes / contribuidores
 
-## Estructura
+Empezá por [`AGENTS.md`](./AGENTS.md) (mapa del repo + reglas duras).  
+Diseño: [`docs/README.md`](./docs/README.md).
+
+## Desarrollo
+
+```bash
+pnpm install
+pnpm dev
+```
+
+- Cliente: http://localhost:5173  
+- Servidor: ws://localhost:2567  
+
+Abrí dos pestañas → crear/unirse con el mismo código → Ready → Start (host).  
+O usá **Jugar solo (test)** para un bot pasivo.
+
+## Packages
 
 ```
-docs/     diseño, arquitectura, multiplayer, contenido
-apps/     (próximamente) client / server / shared
+packages/shared   simulación + content + tipos
+packages/server   Colyseus GameRoom
+packages/client   Phaser UI (scenes/)
+content/          defs JSON (espejo de shared content)
+docs/             diseño (español)
 ```

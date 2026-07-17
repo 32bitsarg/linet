@@ -13,13 +13,13 @@ Una partida MVP = jugadores en una **room** Colyseus, cada uno en su lane, envi�
 
 | Pieza | Decisión |
 |-------|----------|
-| **A) Lanes paralelos** | Cada jugador tiene su **path** y sus **build slots**. Olas base iguales / espejo. |
+| **A) Lanes paralelos** | Cada jugador tiene su **laberinto (grilla)**. Olas base iguales / espejo. |
 | **C) Send** | Matar (o gastar income) permite **enviar creeps al lane del rival**. |
 | **B) Coop** | Fuera del MVP → backlog |
 
 ### Fantasía de partida
 
-1. Defendés tu línea.
+1. Armás y defendés tu laberinto.
 2. Clear eficiente → income / send charge.
 3. Mandás creeps al rival para romperle el timing.
 4. Quien se queda sin vidas pierde (last standing). Empate: ver tie-break abajo.
@@ -51,7 +51,7 @@ menu → create/join lobby → ready → playing → won/lost → rematch/leave
 |-------|-------------------|
 | Create / Join room | Código o link corto (1v1) |
 | Lobby | 2 players, ready, host start |
-| Lanes | Cada uno ve/juega su path; rival visible (overview o panel) |
+| Lanes | Cada uno ve/juega su laberinto; rival visible al lado |
 | Sends | Enviar creeps válidos al lane rival |
 | Sync | Mismo tick; leaks/sends consistentes |
 | Disconnect | Reconexión en ventana X segundos |
@@ -62,7 +62,7 @@ menu → create/join lobby → ready → playing → won/lost → rematch/leave
 ```
 JoinRoom / LeaveRoom
 SetReady
-PlaceTower { slotId, towerId }
+PlaceTower { col, row, towerId }
 UpgradeTower { towerInstanceId }
 SellTower { towerInstanceId }
 SendCreeps { sendId, targetPlayerId? }   # ver send.md

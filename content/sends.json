@@ -1,0 +1,33 @@
+[
+  {
+    "id": "send_swarm",
+    "costSendPoints": 20,
+    "minWave": 1,
+    "cooldownMs": 5000,
+    "entries": [{ "creepId": "grub", "count": 3 }]
+  },
+  {
+    "id": "send_fast",
+    "costSendPoints": 35,
+    "minWave": 2,
+    "cooldownMs": 6000,
+    "entries": [{ "creepId": "runner", "count": 2 }]
+  },
+  {
+    "id": "send_tank",
+    "costSendPoints": 60,
+    "minWave": 4,
+    "cooldownMs": 8000,
+    "entries": [{ "creepId": "brute", "count": 1 }]
+  },
+  {
+    "id": "send_boss",
+    "costSendPoints": 120,
+    "minWave": 6,
+    "cooldownMs": 12000,
+    "entries": [
+      { "creepId": "shade", "count": 1 },
+      { "creepId": "brute", "count": 1 }
+    ]
+  }
+]

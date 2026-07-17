@@ -12,7 +12,7 @@ Podés crear/entrar a una **room online** y completar una partida multijugador:
 
 1. Create / join lobby (código o link).
 2. Todos ready → partida.
-3. Cada jugador coloca / upgradea / vende torres en **su** lane (slots propios).
+3. Cada jugador coloca / upgradea / vende torres en **su** laberinto (celdas propias; sin sellar path).
 4. Olas espejo + **sends** al rival (variante **A + C**).
 5. Simulación **autoritativa en servidor**.
 6. Last standing (0 vidas = out) → resultados → lobby/menú.
@@ -25,8 +25,8 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 | Pilar | Implicancia |
 |-------|-------------|
 | **Multijugador online 1v1** | Colyseus rooms + WebSockets |
-| **A + C** | Lanes paralelos + send de creeps al rival |
-| Line TD jugable | Path, torres, olas, economía, vidas |
+| **A + C** | Laberintos paralelos + send de creeps al rival |
+| Line Tower Wars jugable | Grilla, A*, torres, olas, economía, vidas |
 | Web | Phaser 3 en browser |
 
 ## Checklist MVP
@@ -41,15 +41,15 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 | `mvp-mp-sync` | State sync | Todos ven el mismo resultado de ola/leaks | idem | mvp |
 | `mvp-mp-reconnect` | Reconnect corto | Rejoin en ventana X s sin romper la room | Colyseus | mvp |
 | `mvp-mp-results` | Resultados | Pantalla final + rematch/leave | [screens.md](../ui/screens.md) | mvp |
-| `mvp-mp-lanes` | Lanes paralelos (A) | 2 paths espejo; slots por jugador | [overview.md](../multiplayer/overview.md) | mvp |
+| `mvp-mp-lanes` | Lanes paralelos (A) | 2 laberintos espejo; ownership por lane | [overview.md](../multiplayer/overview.md) | mvp |
 | `mvp-mp-send` | Send al rival (C) | Comprar y spawnear creeps en lane rival | [send.md](../multiplayer/send.md) | mvp |
 
 ### Core jugable
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-path` | Path + spawn/exit | Creeps recorren waypoints y leakean | [path.md](../gameplay/path.md) | mvp |
-| `mvp-slots` | Build slots (por jugador) | Place/sell; ownership de slot | [path.md](../gameplay/path.md) | mvp |
+| `mvp-path` | Grilla + A* spawn/exit | Creeps pathfindean; no se puede sellar | [path.md](../gameplay/path.md) | mvp |
+| `mvp-slots` | Place en celdas | Place/sell; ownership de lane; reject block | [path.md](../gameplay/path.md) | mvp |
 | `mvp-towers` | 4–6 torres base | Roles distintos, stats jugables | [tower-roster.md](../content/tower-roster.md) | mvp |
 | `mvp-upgrades` | Upgrades lineales | L1→L2→L3 por torre MVP | [towers.md](../gameplay/towers.md) | mvp |
 | `mvp-creeps` | Roster de creeps | ≥4 tipos | [creep-roster.md](../content/creep-roster.md) | mvp |
@@ -74,7 +74,7 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-map-01` | 1 mapa multi | Path(s) + slots por jugador | [maps.md](../content/maps.md) | mvp |
+| `mvp-map-01` | 1 mapa multi | 2 laberintos grilla por jugador | [maps.md](../content/maps.md) | mvp |
 | `mvp-mode-classic` | Classic multi | Reglas estables en room | [classic.md](../modes/classic.md) | mvp |
 
 ## Explícitamente fuera del MVP

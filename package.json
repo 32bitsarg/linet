@@ -1,0 +1,17 @@
+{
+  "name": "linet",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @linet/server --filter @linet/client run dev",
+    "dev:server": "pnpm --filter @linet/server dev",
+    "dev:client": "pnpm --filter @linet/client dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter @linet/shared test",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

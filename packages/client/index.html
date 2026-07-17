@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0a100c;
+        --moss: #1a2a1c;
+        --leaf: #3d7a4a;
+        --leaf-bright: #6fbf78;
+        --sand: #d8c49a;
+        --fog: #b7cbb0;
+        --danger: #c45a4a;
+        --panel: rgba(10, 16, 12, 0.78);
+        --line: rgba(216, 196, 154, 0.22);
+        --font-display: "Bebas Neue", Impact, sans-serif;
+        --font-ui: "Sora", sans-serif;
+      }
+
+      html,
+      body,
+      #game {
+        margin: 0;
+        height: 100%;
+        background: var(--ink);
+      }
+
+      body {
+        overflow: hidden;
+        font-family: var(--font-ui);
+        color: #e8f0e0;
+      }
+
+      #linet-ui {
+        position: fixed;
+        z-index: 20;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #linet-ui .shell {
+        pointer-events: auto;
+        width: min(720px, 94%);
+        max-height: 92%;
+        overflow: auto;
+        padding: 8px;
+        animation: shellIn 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      #linet-ui .shell.compact {
+        width: min(440px, 94%);
+      }
+
+      @keyframes shellIn {
+        from {
+          opacity: 0;
+          transform: translateY(18px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      #linet-ui .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 32px 34px 28px;
+        backdrop-filter: blur(10px);
+        box-shadow:
+          0 0 0 1px rgba(111, 191, 120, 0.08),
+          0 24px 64px rgba(0, 0, 0, 0.55);
+      }
+
+      #linet-ui .brand {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+
+      #linet-ui .brand-mark {
+        display: inline-block;
+        font-family: var(--font-display);
+        font-size: clamp(64px, 10vw, 92px);
+        line-height: 0.9;
+        letter-spacing: 0.08em;
+        color: #f3f7ea;
+        text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+        animation: brandPulse 3.2s ease-in-out infinite;
+      }
+
+      @keyframes brandPulse {
+        0%,
+        100% {
+          text-shadow:
+            0 2px 0 rgba(0, 0, 0, 0.35),
+            0 0 24px rgba(111, 191, 120, 0.15);
+        }
+        50% {
+          text-shadow:
+            0 2px 0 rgba(0, 0, 0, 0.35),
+            0 0 36px rgba(216, 196, 154, 0.28);
+        }
+      }
+
+      #linet-ui .brand-rule {
+        width: 72px;
+        height: 3px;
+        margin: 10px auto 14px;
+        background: linear-gradient(90deg, transparent, var(--sand), transparent);
+      }
+
+      #linet-ui .subtitle {
+        margin: 0 0 26px;
+        text-align: center;
+        color: var(--fog);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      #linet-ui h1:not(.brand-mark) {
+        margin: 0 0 6px;
+        font-family: var(--font-display);
+        font-size: 48px;
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-align: center;
+        color: #f3f7ea;
+      }
+
+      #linet-ui label {
+        display: block;
+        margin: 0 0 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--sand);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      #linet-ui .field {
+        margin-bottom: 14px;
+      }
+
+      #linet-ui input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 14px;
+        font-family: var(--font-ui);
+        font-size: 15px;
+        border-radius: 2px;
+        border: 1px solid rgba(111, 191, 120, 0.28);
+        background: rgba(6, 10, 8, 0.85);
+        color: #f2fff4;
+        outline: none;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      #linet-ui input:focus {
+        border-color: var(--leaf-bright);
+        box-shadow: 0 0 0 2px rgba(111, 191, 120, 0.18);
+      }
+
+      #linet-ui .hint {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #7f9578;
+      }
+
+      #linet-ui .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      #linet-ui .row {
+        display: flex;
+        gap: 10px;
+      }
+
+      #linet-ui button {
+        flex: 1;
+        padding: 13px 14px;
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        border: 1px solid transparent;
+        border-radius: 2px;
+        cursor: pointer;
+        color: #f4fff6;
+        background: linear-gradient(180deg, #4a8a52 0%, #2f5f38 100%);
+        transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+      }
+
+      #linet-ui button:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+      }
+
+      #linet-ui button:active {
+        transform: translateY(0);
+      }
+
+      #linet-ui button.secondary {
+        background: rgba(26, 42, 30, 0.95);
+        border-color: rgba(216, 196, 154, 0.2);
+        color: var(--fog);
+      }
+
+      #linet-ui button.solo {
+        background: transparent;
+        border-color: rgba(216, 196, 154, 0.45);
+        color: var(--sand);
+      }
+
+      #linet-ui button.solo:hover {
+        background: rgba(216, 196, 154, 0.08);
+        filter: none;
+      }
+
+      #linet-ui button.danger {
+        background: linear-gradient(180deg, #8a4540 0%, #5c2c28 100%);
+      }
+
+      #linet-ui button:disabled {
+        opacity: 0.45;
+        cursor: default;
+        transform: none;
+      }
+
+      #linet-ui .error {
+        margin-top: 12px;
+        color: #ff8a80;
+        font-size: 13px;
+        text-align: center;
+        min-height: 1.2em;
+      }
+
+      #linet-ui .code-big {
+        text-align: center;
+        font-family: var(--font-display);
+        font-size: 40px;
+        font-weight: 400;
+        letter-spacing: 0.28em;
+        margin: 8px 0 4px;
+        color: var(--sand);
+      }
+
+      #linet-ui .players {
+        margin: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #linet-ui .player-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 2px;
+        background: rgba(8, 14, 10, 0.7);
+        border: 1px solid var(--line);
+        font-size: 14px;
+      }
+
+      #linet-ui .badge {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 4px 8px;
+        border-radius: 2px;
+        background: #2a3d2e;
+        color: #b7cbb0;
+      }
+
+      #linet-ui .badge.ready {
+        background: #2e5a34;
+        color: #c8e6c9;
+      }
+
+      #linet-ui .status {
+        text-align: center;
+        color: var(--fog);
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      #linet-ui .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 0 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--sand);
+      }
+
+      #linet-ui .room-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 72px;
+        max-height: 200px;
+        overflow: auto;
+        margin-bottom: 8px;
+        padding: 6px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      #linet-ui .room-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 2px;
+        background: rgba(18, 28, 20, 0.9);
+        border: 1px solid rgba(61, 122, 74, 0.35);
+        transition: border-color 140ms ease;
+      }
+
+      #linet-ui .room-row:hover {
+        border-color: rgba(216, 196, 154, 0.45);
+      }
+
+      #linet-ui .room-row .meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      #linet-ui .room-row .meta strong {
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #linet-ui .room-row .meta span {
+        font-size: 12px;
+        color: #9bb890;
+      }
+
+      #linet-ui .room-row button {
+        flex: 0 0 auto;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      #linet-ui .empty-list {
+        text-align: center;
+        color: #7f9578;
+        font-size: 13px;
+        padding: 18px 8px;
+      }
+
+      #linet-ui .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--line), transparent);
+        margin: 18px 0;
+      }
+
+      #linet-ui .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
+
+      @media (max-width: 700px) {
+        #linet-ui .menu-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      #linet-ui .menu-col-title {
+        margin: 0 0 12px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--sand);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

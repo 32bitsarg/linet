@@ -10,8 +10,8 @@ Usá los estados de [README.md](./README.md). Cuando una feature sea grande, lin
 
 | ID | Feature | Estado | Notas / doc |
 |----|---------|--------|-------------|
-| `path-system` | Path de waypoints + leak | mvp | [path.md](../gameplay/path.md) |
-| `build-slots` | Slots de construcción | mvp | [path.md](../gameplay/path.md) |
+| `path-system` | Grilla + A* spawn/exit + leak | mvp | [path.md](../gameplay/path.md) |
+| `build-slots` | Place en celdas (no sellar) | mvp | [path.md](../gameplay/path.md) |
 | `tower-place-sell` | Place / sell torres | mvp | [towers.md](../gameplay/towers.md) |
 | `tower-upgrades` | Upgrades de torres | mvp | [towers.md](../gameplay/towers.md) |
 | `tower-targeting` | Prioridades first/last/strong… | next | Default MVP = first |

@@ -5,20 +5,19 @@
 
 ## Contenido MVP
 
-| id | Nombre | Lanes | Slots (aprox) | Forma del path | Estado |
-|----|--------|-------|---------------|----------------|--------|
-| `line_01` | | **2 espejo** (1v1) | 15–25 / jugador | zigzag / S | draft |
+| id | Nombre | Lanes | Grilla | Flujo | Estado |
+|----|--------|-------|--------|-------|--------|
+| `line_01` | Twin Mazes | **2 espejo** (1v1) | 12×14, cell 40 | arriba → abajo | draft |
 
 ## Notas de diseño de `line_01`
 
-- **Perspectiva:** top-down ortogonal.
-- Simetría justa: mismos waypoints relativos y mismos slots.
-- Legible de un vistazo **por lane**; el rival se ve sin confundir ownership.
-- Slots cerca de curvas = más valor.
+- **Perspectiva:** top-down ortogonal; dos rectángulos verticales lado a lado.
+- Simetría justa: mismas dimensiones y spawn/exit relativos.
+- Torres bloquean celdas; A\* garantiza ruta spawn→exit.
 - Espacio visual para feedback de **incoming send**.
-- Resolución de referencia: 1280×720, escala responsiva.
+- Resolución de referencia: 1280×720.
 
 ## Post-MVP
 
-- Mapas con 2 lanes.
-- Mapas con shortcuts / portals (con cuidado: rompe claridad Line TD).
+- Grillas más grandes / densidades distintas.
+- Hazards / terreno especial (con cuidado: claridad del maze).
