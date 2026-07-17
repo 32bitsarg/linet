@@ -1,6 +1,15 @@
 import Phaser from "phaser";
 import { MAP, TOWERS, type SimSnapshot } from "@linet/shared";
 import { net } from "../net";
+import {
+  createBadge,
+  createBanner,
+  createButton,
+  createIconText,
+  createPanel,
+  createStyledText,
+  UI,
+} from "../ui/UIFactory";
 
 const TOWER_COLORS: Record<string, number> = {
   arrow: 0x6dbf6a,
@@ -23,17 +32,26 @@ export class GameScene extends Phaser.Scene {
   private creepGfx = new Map<string, Phaser.GameObjects.Arc>();
   private creepHealthBars = new Map<string, Phaser.GameObjects.Container>();
   private towerGfx = new Map<string, Phaser.GameObjects.Container>();
-  private hud!: Phaser.GameObjects.Text;
   private banner!: Phaser.GameObjects.Text;
   private laneLabelLeft!: Phaser.GameObjects.Text;
   private laneLabelRight!: Phaser.GameObjects.Text;
+  private waveBadge!: Phaser.GameObjects.Container;
+  private countdownText!: Phaser.GameObjects.Text;
+  private livesText!: Phaser.GameObjects.Text;
+  private goldText!: Phaser.GameObjects.Text;
+  private spText!: Phaser.GameObjects.Text;
+  private rivalText!: Phaser.GameObjects.Text;
+  private towerHintText!: Phaser.GameObjects.Text;
   private selectedTowerId: string = "arrow";
   private selectedInstanceId: string | null = null;
   private placeRejectUntil = 0;
   private rangeCircle!: Phaser.GameObjects.Arc;
   private hoverCell!: Phaser.GameObjects.Rectangle;
-  private buildButtons: Phaser.GameObjects.Container[] = [];
-  private sendButtons: Phaser.GameObjects.Container[] = [];
+  private buildButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
+  private sendButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
+  private towerPanel!: Phaser.GameObjects.Container;
+  private towerPanelTitle!: Phaser.GameObjects.Text;
+  private towerPanelStats!: Phaser.GameObjects.Text;
 
   constructor() {
     super("game");
@@ -191,26 +209,21 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false)
       .setDepth(25);
 
-    this.hud = this.add
-      .text(12, 652, "", {
-        fontFamily: "Sora, sans-serif",
-        fontSize: "13px",
-        color: "#e8f0e0",
-        backgroundColor: "#00000000",
-        lineSpacing: 3,
-      })
-      .setScrollFactor(0)
-      .setDepth(100);
+    // Top HUD bar
+    createPanel(this, width / 2, 36, width - 24, 56, {
+      color: UI.colors.darkBg,
+      alpha: 0.92,
+      borderColor: UI.colors.panelBorder,
+    });
+    this.waveBadge = createBadge(this, 64, 36, "OLA 0/10", UI.colors.gold);
+    this.countdownText = createStyledText(this, 120, 28, "", "small");
+    this.livesText = createIconText(this, 280, 28, "❤", "20", UI.colors.redText);
+    this.goldText = createIconText(this, 380, 28, "●", "200", UI.colors.goldText);
+    this.spText = createIconText(this, 490, 28, "⚡", "80", UI.colors.blueText);
+    this.rivalText = createStyledText(this, width - 220, 28, "", "body");
+    this.towerHintText = createStyledText(this, width / 2, 62, "", "small");
 
-    this.banner = this.add
-      .text(width / 2, 42, "", {
-        fontFamily: "Bebas Neue, Impact, sans-serif",
-        fontSize: "32px",
-        color: "#d8c49a",
-        letterSpacing: 2,
-      })
-      .setOrigin(0.5)
-      .setDepth(100);
+    this.banner = createBanner(this, width, height);
 
     this.createBuildBar();
     this.createSendPanel();
@@ -291,67 +304,123 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createBuildBar() {
-    const y = 680;
+    const startX = 140;
+    const y = 668;
+    const gap = 92;
     TOWERS.forEach((t, i) => {
-      const x = 280 + i * 108;
-      const bg = this.add
-        .rectangle(0, 0, 98, 38, TOWER_COLORS[t.id] ?? 0x666666)
-        .setStrokeStyle(1, 0xd8c49a, 0.35)
-        .setInteractive({ useHandCursor: true });
-      const label = this.add
-        .text(0, 0, `${t.name}\n$${t.cost}`, {
-          fontFamily: "Sora, sans-serif",
-          fontSize: "11px",
-          color: "#111",
-          align: "center",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5);
-      const c = this.add.container(x, y, [bg, label]).setDepth(100);
-      bg.on("pointerdown", () => {
-        this.selectedTowerId = t.id;
-        this.selectedInstanceId = null;
-        this.rangeCircle.setVisible(false);
+      const x = startX + i * gap;
+      const btn = createButton(this, x, y, `${t.name}\n$${t.cost}`, {
+        width: 84,
+        height: 48,
+        color: TOWER_COLORS[t.id] ?? 0x888888,
+        textColor: UI.colors.textDark,
+        fontSize: "11px",
+        selected: t.id === this.selectedTowerId,
+        onClick: () => {
+          this.selectedTowerId = t.id;
+          this.selectedInstanceId = null;
+          this.rangeCircle.setVisible(false);
+          this.refreshBuildBar();
+        },
       });
-      this.buildButtons.push(c);
+      this.buildButtons.push({ id: t.id, container: btn });
     });
+  }
+
+  private refreshBuildBar() {
+    for (const btn of this.buildButtons) {
+      const bg = btn.container.list[0] as Phaser.GameObjects.Rectangle;
+      const selected = btn.id === this.selectedTowerId;
+      const def = TOWERS.find((t) => t.id === btn.id);
+      const color = def ? (TOWER_COLORS[def.id] ?? 0x888888) : 0x888888;
+      const borderColor = selected ? UI.colors.gold : UI.colors.panelBorder;
+      bg.setFillStyle(color).setStrokeStyle(selected ? 2 : 1, borderColor);
+    }
   }
 
   private createSendPanel() {
     const sends = [
-      { id: "send_swarm", label: "Swarm\n20SP" },
-      { id: "send_fast", label: "Fast\n35SP" },
-      { id: "send_tank", label: "Tank\n60SP" },
-      { id: "send_boss", label: "Boss\n120SP" },
+      { id: "send_swarm", label: "SWARM\n20 SP" },
+      { id: "send_fast", label: "FAST\n35 SP" },
+      { id: "send_tank", label: "TANK\n60 SP" },
+      { id: "send_boss", label: "BOSS\n120 SP" },
     ];
+    const startX = 1030;
+    const y = 668;
+    const gap = 92;
     sends.forEach((s, i) => {
-      const x = 920 + (i % 2) * 100;
-      const y = 658 + Math.floor(i / 2) * 36;
-      const bg = this.add
-        .rectangle(0, 0, 92, 32, 0x5a2e2c)
-        .setStrokeStyle(1, 0xc45a4a, 0.45)
-        .setInteractive({ useHandCursor: true });
-      const label = this.add
-        .text(0, 0, s.label, {
-          fontFamily: "Sora, sans-serif",
-          fontSize: "10px",
-          color: "#ffe8e4",
-          align: "center",
-        })
-        .setOrigin(0.5);
-      const c = this.add.container(x, y, [bg, label]).setDepth(100);
-      bg.on("pointerdown", () => net.sendIntent({ type: "sendCreeps", sendId: s.id }));
-      this.sendButtons.push(c);
+      const x = startX + i * gap;
+      const btn = createButton(this, x, y, s.label, {
+        width: 84,
+        height: 48,
+        color: 0x4a2522,
+        borderColor: UI.colors.red,
+        textColor: UI.colors.redText,
+        fontSize: "11px",
+        onClick: () => net.sendIntent({ type: "sendCreeps", sendId: s.id }),
+      });
+      this.sendButtons.push({ id: s.id, container: btn });
     });
   }
 
   private createTowerPanel() {
+    const width = 170;
+    const height = 110;
+    const x = 640;
+    const y = 80;
+    createPanel(this, x, y, width, height, { color: UI.colors.panelBg, alpha: 0.95 });
+    this.towerPanelTitle = createStyledText(this, x - width / 2 + 12, y - height / 2 + 10, "TORRE", "body", UI.colors.goldText);
+    this.towerPanelStats = createStyledText(this, x - width / 2 + 12, y - height / 2 + 32, "", "small");
+    const upBtn = createButton(this, x - 42, y + 34, "UPGRADE [U]", {
+      width: 80,
+      height: 26,
+      color: UI.colors.green,
+      textColor: UI.colors.textDark,
+      fontSize: "10px",
+      onClick: () => {
+        if (this.selectedInstanceId) net.sendIntent({ type: "upgradeTower", towerInstanceId: this.selectedInstanceId });
+      },
+    });
+    const sellBtn = createButton(this, x + 42, y + 34, "SELL [S]", {
+      width: 76,
+      height: 26,
+      color: UI.colors.red,
+      textColor: UI.colors.textDark,
+      fontSize: "10px",
+      onClick: () => {
+        if (this.selectedInstanceId) net.sendIntent({ type: "sellTower", towerInstanceId: this.selectedInstanceId });
+      },
+    });
+    this.towerPanel = this.add
+      .container(x, y, [this.towerPanelTitle, this.towerPanelStats, upBtn, sellBtn])
+      .setDepth(UI.z.panels)
+      .setVisible(false);
+
     this.input.keyboard?.on("keydown-U", () => {
       if (this.selectedInstanceId) net.sendIntent({ type: "upgradeTower", towerInstanceId: this.selectedInstanceId });
     });
     this.input.keyboard?.on("keydown-S", () => {
       if (this.selectedInstanceId) net.sendIntent({ type: "sellTower", towerInstanceId: this.selectedInstanceId });
     });
+  }
+
+  private updateTowerPanel() {
+    if (!this.state || !this.selectedInstanceId) {
+      this.towerPanel.setVisible(false);
+      return;
+    }
+    const tower = this.state.towers.find((t) => t.id === this.selectedInstanceId);
+    if (!tower) {
+      this.towerPanel.setVisible(false);
+      return;
+    }
+    const def = TOWERS.find((t) => t.id === tower.towerId);
+    const stats = def
+      ? `Lvl ${tower.level} · ${def.name}\nRng ${Math.round(def.range)} · Dmg ${def.damage}`
+      : `Lvl ${tower.level}`;
+    this.towerPanelTitle.setText(def?.name.toUpperCase() ?? "TORRE");
+    this.towerPanelStats.setText(stats);
+    this.towerPanel.setVisible(true);
   }
 
   private onLanePointer(laneId: string, worldX: number, worldY: number) {
@@ -454,7 +523,6 @@ export class GameScene extends Phaser.Scene {
     if (!this.state) return;
     const me = this.me();
     const rival = this.state.players.find((p) => p.sessionId !== net.sessionId);
-    const cd = this.state.waveActive ? "OLA" : `CD ${this.state.waveCountdown.toFixed(1)}s`;
 
     if (me) {
       if (me.laneIndex === 0) {
@@ -466,25 +534,46 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    this.hud.setText(
-      [
-        `Ola ${this.state.waveIndex}/10  ·  ${cd}${this.state.suddenDeath ? "  ·  SUDDEN DEATH" : ""}`,
-        me ? `${me.lives} vidas  ·  ${me.gold}G  ·  ${me.sendPoints}SP` : "",
-        rival ? `Rival ${rival.name}: ${rival.lives}❤${this.state.soloMode ? " (bot)" : ""}` : "",
-        this.selectedInstanceId
-          ? "[U] upgrade  ·  [S] sell  ·  [ESC] deselect"
-          : `${this.selectedTowerId} — click celda`,
-      ].join("\n"),
+    const badgeLabel = this.waveBadge.list[1] as Phaser.GameObjects.Text;
+    badgeLabel.setText(`OLA ${this.state.waveIndex}/10`);
+    const cd = this.state.waveActive
+      ? "EN PROGRESO"
+      : `SIGUIENTE EN ${Math.max(0, this.state.waveCountdown).toFixed(1)}s`;
+    this.countdownText.setText(`${cd}${this.state.suddenDeath ? "  ·  SUDDEN DEATH" : ""}`);
+
+    if (me) {
+      this.livesText.setText(`❤ ${me.lives}`);
+      this.goldText.setText(`● ${me.gold}`);
+      this.spText.setText(`⚡ ${me.sendPoints}`);
+    }
+
+    if (rival) {
+      this.rivalText
+        .setText(`RIVAL: ${rival.name}  ${rival.lives}❤${this.state.soloMode ? " (bot)" : ""}`)
+        .setColor(UI.colors.redText);
+    } else {
+      this.rivalText.setText("");
+    }
+
+    this.towerHintText.setText(
+      this.selectedInstanceId
+        ? "[U] UPGRADE  ·  [S] SELL  ·  [ESC] DESELECT"
+        : `${this.selectedTowerId.toUpperCase()} — CLICK UNA CELDA VACÍA`,
     );
+
+    this.updateTowerPanel();
 
     if (this.time.now < this.placeRejectUntil) {
       this.banner.setText("NO PODÉS TAPAR EL CAMINO");
+      this.banner.setColor("#c45a4a");
     } else if (this.state.incomingSendBanner && this.state.incomingSendBanner.until > this.state.time) {
       const meLane = me?.laneIndex;
       if (meLane === this.state.incomingSendBanner.laneIndex) {
-        this.banner.setText(`INCOMING  ·  ${this.state.incomingSendBanner.sendId}`);
+        this.banner.setText(`¡INCOMING ${this.state.incomingSendBanner.sendId.toUpperCase()}!`);
+        this.banner.setColor("#c45a4a");
       } else {
-        this.banner.setText(`SEND  ·  ${this.state.incomingSendBanner.sendId}`);
+        this.banner.setText(`SEND ${this.state.incomingSendBanner.sendId.toUpperCase()}`);
+        this.banner.setColor(UI.colors.goldText);
       }
     } else {
       this.banner.setText("");
