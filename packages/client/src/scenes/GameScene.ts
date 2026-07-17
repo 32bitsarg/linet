@@ -21,6 +21,7 @@ const CREEP_COLORS: Record<string, number> = {
 export class GameScene extends Phaser.Scene {
   private state: SimSnapshot | null = null;
   private creepGfx = new Map<string, Phaser.GameObjects.Arc>();
+  private creepHealthBars = new Map<string, Phaser.GameObjects.Container>();
   private towerGfx = new Map<string, Phaser.GameObjects.Container>();
   private hud!: Phaser.GameObjects.Text;
   private banner!: Phaser.GameObjects.Text;
@@ -384,6 +385,8 @@ export class GameScene extends Phaser.Scene {
       if (!liveCreepIds.has(id)) {
         gfx.destroy();
         this.creepGfx.delete(id);
+        this.creepHealthBars.get(id)?.destroy();
+        this.creepHealthBars.delete(id);
       }
     }
     for (const creep of this.state.creeps) {
@@ -392,9 +395,15 @@ export class GameScene extends Phaser.Scene {
         const r = creep.creepId === "boss_1" ? 14 : creep.creepId === "brute" ? 11 : 8;
         gfx = this.add.circle(creep.x, creep.y, r, CREEP_COLORS[creep.creepId] ?? 0xffffff).setDepth(20);
         this.creepGfx.set(creep.id, gfx);
+        const bar = this.createCreepHealthBar();
+        this.creepHealthBars.set(creep.id, bar);
       }
       gfx.setPosition(creep.x, creep.y);
       gfx.setAlpha(creep.source === "send" ? 0.85 : 1);
+      const bar = this.creepHealthBars.get(creep.id);
+      if (bar) {
+        this.updateCreepHealthBar(bar, creep, gfx);
+      }
     }
 
     const liveTowerIds = new Set(this.state.towers.map((t) => t.id));
@@ -480,5 +489,35 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.banner.setText("");
     }
+  }
+
+  private createCreepHealthBar(): Phaser.GameObjects.Container {
+    const width = 20;
+    const height = 4;
+    const bg = this.add.rectangle(0, 0, width, height, 0x222222).setDepth(22);
+    const fill = this.add
+      .rectangle(-width / 2, 0, width, height, 0x4ade80)
+      .setDepth(22)
+      .setOrigin(0, 0.5);
+    return this.add.container(0, 0, [bg, fill]).setDepth(22);
+  }
+
+  private updateCreepHealthBar(
+    bar: Phaser.GameObjects.Container,
+    creep: SimSnapshot["creeps"][number],
+    gfx: Phaser.GameObjects.Arc,
+  ) {
+    const pct = Math.max(0, creep.hp / creep.maxHp);
+    const fill = bar.list[1] as Phaser.GameObjects.Rectangle;
+    fill.scaleX = pct;
+    fill.setFillStyle(this.healthBarColor(pct));
+    bar.setPosition(creep.x, creep.y - gfx.radius - 6);
+    bar.setAlpha(gfx.alpha);
+  }
+
+  private healthBarColor(pct: number): number {
+    if (pct > 0.6) return 0x4ade80; // green
+    if (pct > 0.3) return 0xfacc15; // yellow
+    return 0xef4444; // red
   }
 }
