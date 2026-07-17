@@ -3,7 +3,7 @@ services:
     name: linet
     runtime: node
     plan: free
-    buildCommand: corepack pnpm install && corepack pnpm -r run build
+    buildCommand: corepack pnpm install --include=dev && corepack pnpm -r run build
     startCommand: node packages/server/dist/index.js
     envVars:
       - key: NODE_ENV
