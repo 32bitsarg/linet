@@ -296,6 +296,7 @@ export class GameScene extends Phaser.Scene {
         myLane.originY + row * myLane.cellSize + myLane.cellSize / 2,
       )
       .setSize(myLane.cellSize - 4, myLane.cellSize - 4)
+      .setFillStyle(TOWER_COLORS[this.selectedTowerId] ?? 0x6fbf78, 0.38)
       .setVisible(true);
   }
 
