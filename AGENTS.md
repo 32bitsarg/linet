@@ -24,9 +24,17 @@ Entry point for AI agents working on this repo. Read this before changing code.
 | `packages/shared/src/content/` | Tower/creep/wave/send/map data |
 | `packages/server/src/GameRoom.ts` | Colyseus room, tick loop, broadcast |
 | `packages/client/src/scenes/` | Phaser UI (one scene per file) |
-| `packages/client/src/net.ts` | Colyseus client, intents/state |
+| `packages/client/src/camera/` | RTS camera (presentation only) |
+| `packages/client/src/fx/towerSprites.ts` | Load tower PNG sheets + idle/attack anims |
+| `packages/client/src/fx/creepSprites.ts` | Load creep PNG sheets + walk anims |
+| `packages/client/public/assets/towers/` | Tower spritesheets (PNG) |
+| `packages/client/public/assets/creeps/` | Creep spritesheets (PNG) |
+| `scripts/bake-tower-sprites.py` | Bake tower pixel sheets |
+| `scripts/bake-creep-sprites.py` | Bake creep pixel sheets |
+| `packages/client/src/net.ts` | Colyseus client, intents/state, `requestSync` |
 | `content/*.json` | Human-readable mirror of shared content (keep in sync) |
 | `docs/` | Design docs (Spanish). Prefer updating with code changes |
+| `docs/prs/` | PR dossiers (what/why per change set) |
 
 ## Data flow
 

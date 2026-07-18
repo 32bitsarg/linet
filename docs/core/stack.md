@@ -21,6 +21,13 @@
 - Colyseus evita reinventar sync / leave-rejoin / matchmaking.
 - El mismo backend puede servir web y, más adelante, clientes mobile.
 
+## Presentación cliente (notas vigentes)
+
+- Phaser **3** (2D). Fantasía 2.5D = sombras/altura/depth, no motor 3D.
+- Escala partida: **`Scale.RESIZE`** (sin letterbox); HUD con cámara UI fija.
+- Terreno procedural en `fx/groundTextures.ts` hasta tener art pipeline.
+- Detalle → [../ui/camera-and-terrain.md](../ui/camera-and-terrain.md).
+
 ## Requisitos no negociables
 
 - **Simulación autoritativa en servidor** (el cliente predice/renderiza; no decide kills/oro finales).

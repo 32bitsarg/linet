@@ -15,7 +15,7 @@ Eso convierte defensa buena en presión ofensiva (fantasía Line TD / custom WC3
 | Recurso | Para qué | Cómo se gana |
 |---------|----------|--------------|
 | **Gold** | Torres / upgrades / sell | Kills |
-| **Send points** (SP) | Comprar envíos al rival | Kills (50% del gold reward), clear de ola (+20 SP), pasivo (+2 SP/s) |
+| **Send points** (SP) | Comprar envíos al rival | Kills (50% del gold reward), clear de ola (**+28 SP**), pasivo (**+3 SP/s**); start **100 SP** |
 
 **Decisión:** `gold + send points` — ver ADR 0003. Esto evita vaciar defensa al atacar y permite balancear sends por separado.
 
@@ -23,10 +23,11 @@ Eso convierte defensa buena en presión ofensiva (fantasía Line TD / custom WC3
 
 | id | Creeps enviados | Costo SP | Min wave | Cooldown |
 |----|-----------------|----------|----------|----------|
-| `send_swarm` | 3× grub | 20 | 1 | 5 s |
-| `send_fast` | 2× runner | 35 | 2 | 6 s |
-| `send_tank` | 1× brute | 60 | 4 | 8 s |
-| `send_boss` | 1× shade + 1× brute | 120 | 6 | 12 s |
+| `send_swarm` | 5× grub | 15 | 1 | 4 s |
+| `send_fast` | 3× runner | 28 | 2 | 5 s |
+| `send_mix` | 3× grub + 2× runner | 40 | 3 | 6 s |
+| `send_tank` | 1× brute | 50 | 3 | 6.5 s |
+| `send_boss` | 1× shade + 2× brute | 95 | 5 | 10 s |
 
 Los creeps de send usan defs del [creep-roster](../content/creep-roster.md) con tag `sendable` o un `SendDef` que referencia `creepId`.
 
