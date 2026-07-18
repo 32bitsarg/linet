@@ -42,8 +42,12 @@ export class NetClient {
   private client = new Client(SERVER_URL);
   room: Room | null = null;
   sessionId = "";
+  private roomId = "";
+  private reconnectionToken = "";
   onState: ((state: SimSnapshot) => void) | null = null;
   onEvent: ((event: SimEvent) => void) | null = null;
+  onConnectionLost: (() => void) | null = null;
+  onConnectionRestored: (() => void) | null = null;
 
   async listRooms(): Promise<ListedRoom[]> {
     const rooms = await this.client.getAvailableRooms("game");
@@ -102,8 +106,28 @@ export class NetClient {
   private bindRoom(): void {
     if (!this.room) return;
     this.sessionId = this.room.sessionId;
+    this.roomId = this.room.roomId;
+    this.reconnectionToken = this.room.reconnectionToken;
     this.room.onMessage("state", (state: SimSnapshot) => this.onState?.(state));
     this.room.onMessage("event", (event: SimEvent) => this.onEvent?.(event));
+
+    this.room.onLeave.once((code) => {
+      if (code !== 1000 && this.reconnectionToken) {
+        this.onConnectionLost?.();
+        void this.attemptReconnect();
+      }
+    });
+    this.room.onError.once(() => this.onConnectionLost?.());
+  }
+
+  private async attemptReconnect(): Promise<void> {
+    try {
+      this.room = await this.client.reconnect(this.reconnectionToken);
+      this.bindRoom();
+      this.onConnectionRestored?.();
+    } catch {
+      // Mantenemos el overlay de desconexión; el usuario puede recargar o salir.
+    }
   }
 
   /** Call after the scene assigns `onState`, so the first snapshot is not dropped. */
@@ -119,6 +143,8 @@ export class NetClient {
     this.room?.leave();
     this.room = null;
     this.sessionId = "";
+    this.roomId = "";
+    this.reconnectionToken = "";
   }
 }
 
