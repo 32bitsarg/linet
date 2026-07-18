@@ -9,7 +9,17 @@ import {
   type SimSnapshot,
 } from "@linet/shared";
 import { CAMERA_BOUNDS_PAD_X, CAMERA_BOUNDS_PAD_Y, RtsCameraController } from "../camera/RtsCamera";
+import {
+  creepDisplaySize,
+  creepSheetKey,
+  playCreepWalk,
+} from "../fx/creepSprites";
 import { TEX_DIRT, TEX_GRASS, TEX_MEADOW, TEX_SCRUB, cellNoise } from "../fx/groundTextures";
+import {
+  playTowerAttack,
+  playTowerIdle,
+  towerSheetKey,
+} from "../fx/towerSprites";
 import { net } from "../net";
 import {
   createBadge,
@@ -29,30 +39,6 @@ const TOWER_COLORS: Record<string, number> = {
   mage: 0x9b6ad8,
 };
 
-const TOWER_BORDER: Record<string, number> = {
-  arrow: 0xa5d6a7,
-  cannon: 0xffb74d,
-  frost: 0x81d4fa,
-  sniper: 0xe0e0e0,
-  mage: 0xce93d8,
-};
-
-const TOWER_LETTER: Record<string, string> = {
-  arrow: "A",
-  cannon: "C",
-  frost: "F",
-  sniper: "S",
-  mage: "M",
-};
-
-const CREEP_COLORS: Record<string, number> = {
-  grub: 0x8bc34a,
-  runner: 0xffc107,
-  brute: 0xe57373,
-  shade: 0x7e57c2,
-  boss_1: 0xd32f2f,
-};
-
 const BOTTOM_H = 46;
 
 /** Y-sorted depth for faux 2.5D (lower on screen draws on top). */
@@ -63,8 +49,13 @@ function depthAtY(y: number, layer = 0): number {
 export class GameScene extends Phaser.Scene {
   private state: SimSnapshot | null = null;
   private creepGfx = new Map<string, Phaser.GameObjects.Container>();
+  private creepLastX = new Map<string, number>();
   private creepHealthBars = new Map<string, Phaser.GameObjects.Container>();
   private towerGfx = new Map<string, Phaser.GameObjects.Container>();
+  /** Sprite child index inside tower containers (after shadow). */
+  private static readonly TOWER_SPRITE_IDX = 1;
+  private static readonly TOWER_LVL_IDX = 2;
+  private static readonly CREEP_SPRITE_IDX = 0;
   private banner!: Phaser.GameObjects.Text;
   private laneLabelLeft!: Phaser.GameObjects.Text;
   private laneLabelRight!: Phaser.GameObjects.Text;
@@ -511,6 +502,18 @@ export class GameScene extends Phaser.Scene {
             .setDepth(depthAtY(Math.max(e.y as number, e.ty as number), 40)),
         );
         this.tweens.add({ targets: line, alpha: 0, duration: 140, onComplete: () => line.destroy() });
+
+        const instanceId = e.towerId as string | undefined;
+        if (instanceId) {
+          const gfx = this.towerGfx.get(instanceId);
+          const tower = this.state?.towers.find((t) => t.id === instanceId);
+          if (gfx && tower) {
+            const sprite = gfx.list[GameScene.TOWER_SPRITE_IDX];
+            if (sprite instanceof Phaser.GameObjects.Sprite) {
+              playTowerAttack(sprite, tower.towerId);
+            }
+          }
+        }
       }
       if (e.type === "placeRejected") {
         this.placeRejectUntil = this.time.now + 1200;
@@ -844,30 +847,44 @@ export class GameScene extends Phaser.Scene {
       if (!liveCreepIds.has(id)) {
         gfx.destroy();
         this.creepGfx.delete(id);
+        this.creepLastX.delete(id);
         this.creepHealthBars.get(id)?.destroy();
         this.creepHealthBars.delete(id);
       }
     }
     for (const creep of this.state.creeps) {
       let gfx = this.creepGfx.get(creep.id);
+      const size = creepDisplaySize(creep.creepId);
       if (!gfx) {
-        const r = creep.creepId === "boss_1" ? 11 : creep.creepId === "brute" ? 9 : 6;
-        const shadow = this.add.ellipse(0, r * 0.55, r * 2.1, r * 0.9, 0x000000, 0.35);
-        const body = this.add.circle(0, -r * 0.35, r, CREEP_COLORS[creep.creepId] ?? 0xffffff);
+        const sheet = creepSheetKey(creep.creepId);
+        const sprite = this.add
+          .sprite(0, 0, sheet, 0)
+          .setDisplaySize(size.w, size.h)
+          .setOrigin(0.5, 0.85);
+        playCreepWalk(sprite, creep.creepId);
         gfx = this.registerWorld(
-          this.add.container(creep.x, creep.y, [shadow, body]).setSize(r * 2, r * 2),
+          this.add.container(creep.x, creep.y, [sprite]).setSize(size.w, size.h),
         );
         this.creepGfx.set(creep.id, gfx);
-        const bar = this.registerWorld(this.createCreepHealthBar());
+        this.creepLastX.set(creep.id, creep.x);
+        const bar = this.registerWorld(this.createCreepHealthBar(size.w));
         this.creepHealthBars.set(creep.id, bar);
       }
-      const body = gfx.list[1] as Phaser.GameObjects.Arc;
+      const sprite = gfx.list[GameScene.CREEP_SPRITE_IDX];
+      const prevX = this.creepLastX.get(creep.id) ?? creep.x;
+      if (sprite instanceof Phaser.GameObjects.Sprite) {
+        if (Math.abs(creep.x - prevX) > 0.4) {
+          sprite.setFlipX(creep.x < prevX);
+        }
+        playCreepWalk(sprite, creep.creepId);
+      }
+      this.creepLastX.set(creep.id, creep.x);
       gfx.setPosition(creep.x, creep.y);
       gfx.setAlpha(creep.source === "send" ? 0.85 : 1);
       gfx.setDepth(depthAtY(creep.y, 2));
       const bar = this.creepHealthBars.get(creep.id);
       if (bar) {
-        this.updateCreepHealthBar(bar, creep, body);
+        this.updateCreepHealthBar(bar, creep, size.h, gfx.alpha);
       }
     }
 
@@ -881,32 +898,25 @@ export class GameScene extends Phaser.Scene {
     for (const tower of this.state.towers) {
       let gfx = this.towerGfx.get(tower.id);
       if (!gfx) {
-        const border = TOWER_BORDER[tower.towerId] ?? 0xd8c49a;
-        const fill = TOWER_COLORS[tower.towerId] ?? 0x888888;
-        // 2.5D stack: ground shadow → pedestal → tall body → roof cap
-        const shadow = this.add.ellipse(1, 10, 24, 11, 0x000000, 0.4);
-        const pedestal = this.add.rectangle(0, 6, 22, 8, 0x1a2218).setStrokeStyle(1, border, 0.7);
-        const body = this.add.rectangle(0, -4, 18, 22, fill).setStrokeStyle(1, border, 0.85);
-        const roof = this.add.rectangle(0, -18, 14, 7, border);
-        const letter = this.add
-          .text(-5, -6, TOWER_LETTER[tower.towerId] ?? "?", {
-            fontFamily: UI.fontTitle,
-            fontSize: "10px",
-            color: "#111",
-          })
-          .setOrigin(0.5);
-        const lvl = this.add
-          .text(6, -6, String(tower.level), {
-            fontFamily: UI.fontTitle,
-            fontSize: "10px",
-            color: "#111",
-          })
-          .setOrigin(0.5);
-        gfx = this.registerWorld(
-          this.add.container(tower.x, tower.y, [shadow, pedestal, body, roof, letter, lvl]).setSize(24, 28),
+        const sheet = towerSheetKey(tower.towerId);
+        const cell = MAP.lanes[0]?.cellSize ?? 36;
+        const tw = Math.round(cell * 0.95);
+        const th = Math.round(cell * 1.12);
+        const shadow = this.add.ellipse(
+          1,
+          Math.round(th * 0.35),
+          Math.round(tw * 0.85),
+          Math.round(th * 0.28),
+          0x000000,
+          0.4,
         );
-        body.setInteractive({ useHandCursor: true });
-        body.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        const sprite = this.add
+          .sprite(0, -2, sheet, 0)
+          .setDisplaySize(tw, th)
+          .setOrigin(0.5, 0.75);
+        playTowerIdle(sprite, tower.towerId);
+        sprite.setInteractive({ useHandCursor: true });
+        sprite.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
           if (pointer.middleButtonDown()) return;
           const me = this.me();
           if (!me || tower.laneIndex !== me.laneIndex) return;
@@ -915,9 +925,21 @@ export class GameScene extends Phaser.Scene {
           const range = def ? towerCombatAtLevel(def, tower.level).range : 100;
           this.rangeCircle.setPosition(tower.x, tower.y).setRadius(range).setVisible(true);
         });
+        const lvl = this.add
+          .text(Math.round(tw * 0.38), -Math.round(th * 0.45), String(tower.level), {
+            fontFamily: UI.fontTitle,
+            fontSize: "12px",
+            color: "#f0f0e8",
+            stroke: "#111",
+            strokeThickness: 3,
+          })
+          .setOrigin(0.5);
+        gfx = this.registerWorld(
+          this.add.container(tower.x, tower.y, [shadow, sprite, lvl]).setSize(tw, th),
+        );
         this.towerGfx.set(tower.id, gfx);
       }
-      const lvlText = gfx.list[5] as Phaser.GameObjects.Text;
+      const lvlText = gfx.list[GameScene.TOWER_LVL_IDX] as Phaser.GameObjects.Text;
       lvlText.setText(String(tower.level));
       gfx.setPosition(tower.x, tower.y);
       gfx.setDepth(depthAtY(tower.y, 5));
@@ -1044,8 +1066,8 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private createCreepHealthBar(): Phaser.GameObjects.Container {
-    const width = 16;
+  private createCreepHealthBar(widthHint = 16): Phaser.GameObjects.Container {
+    const width = Math.max(14, Math.round(widthHint * 0.7));
     const height = 3;
     const bg = this.add.rectangle(0, 0, width, height, 0x222222);
     const fill = this.add.rectangle(-width / 2, 0, width, height, 0x4ade80).setOrigin(0, 0.5);
@@ -1055,14 +1077,15 @@ export class GameScene extends Phaser.Scene {
   private updateCreepHealthBar(
     bar: Phaser.GameObjects.Container,
     creep: SimSnapshot["creeps"][number],
-    body: Phaser.GameObjects.Arc,
+    spriteH: number,
+    alpha: number,
   ) {
     const pct = Math.max(0, creep.hp / creep.maxHp);
     const fill = bar.list[1] as Phaser.GameObjects.Rectangle;
     fill.scaleX = pct;
     fill.setFillStyle(this.healthBarColor(pct));
-    bar.setPosition(creep.x, creep.y - body.radius - 10);
-    bar.setAlpha(body.alpha);
+    bar.setPosition(creep.x, creep.y - spriteH * 0.75);
+    bar.setAlpha(alpha);
     bar.setDepth(depthAtY(creep.y, 8));
   }
 

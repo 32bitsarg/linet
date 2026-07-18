@@ -74,7 +74,7 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-map-01` | 1 mapa multi | Twin Mazes 16×23 cell 28 + terreno/ghost path | [maps.md](../content/maps.md) | done |
+| `mvp-map-01` | 1 mapa multi | Twin Mazes 14×17 cell 36 + terreno/ghost path | [maps.md](../content/maps.md) | done |
 | `mvp-mode-classic` | Classic multi | Reglas estables en room | [classic.md](../modes/classic.md) | done |
 
 ## Explícitamente fuera del MVP

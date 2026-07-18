@@ -58,7 +58,7 @@ LaneDef {
 
 ## MVP
 
-- Mapa `line_01` / Twin Mazes: **2 lanes** 16×23, `cellSize` 28 (paths más altos / largos).
+- Mapa `line_01` / Twin Mazes: **2 lanes** 14×17, `cellSize` 36 (celdas grandes / sprites legibles).
 - El cliente muestra ghost del path actual spawn→exit.
 - Spawns de ola base + cola de **sends** en el spawn del lane rival.
 - Presentación: terreno texturizado + cámara RTS (no cambian las reglas de path).

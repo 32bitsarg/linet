@@ -42,6 +42,9 @@ Cliente (Phaser scene)
 | `packages/client/src/scenes/` | Una escena Phaser por archivo |
 | `packages/client/src/camera/RtsCamera.ts` | Cámara RTS (pan/zoom/foco lane); solo presentación |
 | `packages/client/src/fx/groundTextures.ts` | Texturas procedurales de terreno |
+| `packages/client/src/fx/towerSprites.ts` | Load/anims torres (`public/assets/towers/`) |
+| `packages/client/src/fx/creepSprites.ts` | Load/anims creeps + `creepDisplaySize` ∝ cell |
+| `packages/client/public/assets/{towers,creeps}/` | Spritesheets PNG (bake scripts en `scripts/`) |
 | `packages/client/src/net.ts` | Cliente Colyseus + `requestSync` |
 | `content/*.json` | Espejo humano de defs (mantener sync) |
 

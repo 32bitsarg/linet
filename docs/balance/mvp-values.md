@@ -80,11 +80,13 @@ Ejemplo Archer:
 
 | id | Nombre | HP | Speed | Armor | MR | Gold | Leak damage | Tags |
 |----|--------|----|-------|-------|----|------|-------------|------|
-| `grub` | Grub | 30 | 80 | 0 | 0 | 4 | 1 | swarm |
-| `runner` | Runner | 45 | 140 | 0 | 0 | 5 | 1 | fast |
-| `brute` | Brute | 180 | 50 | 20 | 0 | 12 | 3 | tank, armored |
-| `shade` | Shade | 90 | 70 | 0 | 30 | 8 | 2 | magic-resist |
-| `boss_1` | Boss | 800 | 40 | 40 | 20 | 80 | 10 | boss |
+| `grub` | Grub | 30 | 55 | 0 | 0 | 4 | 1 | swarm |
+| `runner` | Runner | 45 | 100 | 0 | 0 | 5 | 1 | fast |
+| `brute` | Brute | 180 | 38 | 20 | 0 | 12 | 3 | tank, armored |
+| `shade` | Shade | 90 | 50 | 0 | 30 | 8 | 2 | magic-resist |
+| `boss_1` | Boss | 800 | 28 | 40 | 20 | 80 | 10 | boss |
+
+> Velocidades en px/s mundo. Solo `runner` es claramente rápido; el resto más pausado para leer maze craft.
 
 ### Escalado por ola
 

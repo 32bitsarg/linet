@@ -50,11 +50,13 @@ Path: `packages/client/src/fx/groundTextures.ts` (bake en `BootScene`).
 
 `GameScene.paintWorldTerrain()` compone TileSprites + parches. Las lanes pintan tiles por celda encima.
 
-## 2.5D
+## 2.5D / sprites
 
-- Torres: sombra + pedestal + cuerpo alto + techo; `depth ∝ y`.
-- Creeps: sombra + cuerpo levantado; `depth ∝ y`.
-- La grilla de input/pathfinding **no** cambia.
+- Torres: spritesheets PNG en `public/assets/towers/{id}.png` (idle + attack).
+- Creeps: spritesheets PNG en `public/assets/creeps/{id}.png` (walk loop).
+- Tamaño en pantalla ∝ `MAP.cellSize` (celdas grandes → sprites más grandes).
+- Regenerar: `python scripts/bake-tower-sprites.py` / `python scripts/bake-creep-sprites.py`
+- Depth por Y; la grilla de pathfinding no cambia.
 
 ## Hotkeys cámara
 

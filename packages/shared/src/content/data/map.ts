@@ -1,6 +1,9 @@
 import type { MapDef } from "../../types.js";
 
-/** Taller mazes for longer WC3-style paths within 1280×720. */
+/**
+ * Larger cells for readable towers/creeps within 1280×720.
+ * Slightly fewer cells than 16×23@28, but each cell is bigger.
+ */
 export const MAP: MapDef = {
   id: "line_01",
   name: "Twin Mazes",
@@ -10,26 +13,26 @@ export const MAP: MapDef = {
     {
       id: "lane_0",
       originX: 48,
-      originY: 34,
-      cols: 16,
-      rows: 23,
-      cellSize: 28,
-      spawnCol: 7,
+      originY: 30,
+      cols: 14,
+      rows: 17,
+      cellSize: 36,
+      spawnCol: 6,
       spawnRow: 0,
-      exitCol: 7,
-      exitRow: 22,
+      exitCol: 6,
+      exitRow: 16,
     },
     {
       id: "lane_1",
-      originX: 784,
-      originY: 34,
-      cols: 16,
-      rows: 23,
-      cellSize: 28,
-      spawnCol: 8,
+      originX: 728,
+      originY: 30,
+      cols: 14,
+      rows: 17,
+      cellSize: 36,
+      spawnCol: 7,
       spawnRow: 0,
-      exitCol: 8,
-      exitRow: 22,
+      exitCol: 7,
+      exitRow: 16,
     },
   ],
 };
