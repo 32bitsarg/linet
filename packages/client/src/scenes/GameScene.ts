@@ -8,6 +8,7 @@ import {
   createIconText,
   createPanel,
   createStyledText,
+  type ButtonResult,
   UI,
 } from "../ui/UIFactory";
 
@@ -47,9 +48,12 @@ export class GameScene extends Phaser.Scene {
   private placeRejectUntil = 0;
   private rangeCircle!: Phaser.GameObjects.Arc;
   private hoverCell!: Phaser.GameObjects.Rectangle;
-  private buildButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
-  private sendButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
+  private buildButtons: { id: string; button: ButtonResult }[] = [];
+  private sendButtons: { id: string; button: ButtonResult }[] = [];
   private towerPanel!: Phaser.GameObjects.Container;
+  private disconnectOverlay!: Phaser.GameObjects.Container;
+  private rivalWaitOverlay!: Phaser.GameObjects.Container;
+  private rivalWaitText!: Phaser.GameObjects.Text;
   private towerPanelTitle!: Phaser.GameObjects.Text;
   private towerPanelStats!: Phaser.GameObjects.Text;
 
@@ -228,6 +232,11 @@ export class GameScene extends Phaser.Scene {
     this.createBuildBar();
     this.createSendPanel();
     this.createTowerPanel();
+    this.createDisconnectOverlay();
+    this.createRivalWaitOverlay();
+
+    net.onConnectionLost = () => this.disconnectOverlay.setVisible(true);
+    net.onConnectionRestored = () => this.disconnectOverlay.setVisible(false);
 
     net.onState = (s) => {
       this.state = s;
@@ -325,18 +334,17 @@ export class GameScene extends Phaser.Scene {
           this.refreshBuildBar();
         },
       });
-      this.buildButtons.push({ id: t.id, container: btn });
+      this.buildButtons.push({ id: t.id, button: btn });
     });
   }
 
   private refreshBuildBar() {
     for (const btn of this.buildButtons) {
-      const bg = btn.container.list[0] as Phaser.GameObjects.Rectangle;
       const selected = btn.id === this.selectedTowerId;
       const def = TOWERS.find((t) => t.id === btn.id);
       const color = def ? (TOWER_COLORS[def.id] ?? 0x888888) : 0x888888;
       const borderColor = selected ? UI.colors.gold : UI.colors.panelBorder;
-      bg.setFillStyle(color).setStrokeStyle(selected ? 2 : 1, borderColor);
+      btn.button.bg.setFillStyle(color).setStrokeStyle(selected ? 2 : 1, borderColor);
     }
   }
 
@@ -362,7 +370,7 @@ export class GameScene extends Phaser.Scene {
         fontSize: "10px",
         onClick: () => net.sendIntent({ type: "sendCreeps", sendId: s.id }),
       });
-      this.sendButtons.push({ id: s.id, container: btn });
+      this.sendButtons.push({ id: s.id, button: btn });
     });
   }
 
@@ -399,7 +407,7 @@ export class GameScene extends Phaser.Scene {
       },
     });
     this.towerPanel = this.add
-      .container(x, y, [bg, this.towerPanelTitle, this.towerPanelStats, upBtn, sellBtn])
+      .container(x, y, [bg, this.towerPanelTitle, this.towerPanelStats, upBtn.container, sellBtn.container])
       .setDepth(UI.z.panels)
       .setVisible(false);
 
@@ -409,6 +417,39 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on("keydown-S", () => {
       if (this.selectedInstanceId) net.sendIntent({ type: "sellTower", towerInstanceId: this.selectedInstanceId });
     });
+  }
+
+  private createDisconnectOverlay() {
+    const { width, height } = this.scale;
+    const bg = this.add.rectangle(0, 0, width, height, 0x000000, 0.72).setOrigin(0).setDepth(UI.z.modal);
+    const label = this.add
+      .text(width / 2, height / 2, "RECONNECTING…", {
+        fontFamily: UI.fontTitle,
+        fontSize: "36px",
+        color: UI.colors.goldText,
+        letterSpacing: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(UI.z.modal);
+    this.disconnectOverlay = this.add.container(0, 0, [bg, label]).setDepth(UI.z.modal).setVisible(false);
+  }
+
+  private createRivalWaitOverlay() {
+    const { width, height } = this.scale;
+    const bg = this.add.rectangle(0, 0, width, height, 0x000000, 0.25).setOrigin(0).setDepth(UI.z.modal);
+    this.rivalWaitText = this.add
+      .text(width / 2, height / 2, "", {
+        fontFamily: UI.fontBody,
+        fontSize: "18px",
+        color: UI.colors.textLight,
+        align: "center",
+      })
+      .setOrigin(0.5)
+      .setDepth(UI.z.modal);
+    this.rivalWaitOverlay = this.add
+      .container(0, 0, [bg, this.rivalWaitText])
+      .setDepth(UI.z.modal)
+      .setVisible(false);
   }
 
   private updateTowerPanel() {
@@ -425,7 +466,7 @@ export class GameScene extends Phaser.Scene {
     const stats = def
       ? `Lvl ${tower.level} · ${def.name}\nRng ${Math.round(def.range)} · Dmg ${def.damage}`
       : `Lvl ${tower.level}`;
-    this.towerPanelTitle.setText(def?.name.toUpperCase() ?? "TORRE");
+    this.towerPanelTitle.setText((def?.name ?? "").toUpperCase() || "TORRE");
     this.towerPanelStats.setText(stats);
     this.towerPanel.setVisible(true);
   }
@@ -476,6 +517,9 @@ export class GameScene extends Phaser.Scene {
       }
       gfx.setPosition(creep.x, creep.y);
       gfx.setAlpha(creep.source === "send" ? 0.85 : 1);
+      const slowColor = 0x88ccff;
+      const normalColor = CREEP_COLORS[creep.creepId] ?? 0xffffff;
+      gfx.setFillStyle(creep.slowUntil > this.state.time ? slowColor : normalColor);
       const bar = this.creepHealthBars.get(creep.id);
       if (bar) {
         this.updateCreepHealthBar(bar, creep, gfx);
@@ -558,8 +602,15 @@ export class GameScene extends Phaser.Scene {
       this.rivalText
         .setText(`RIVAL: ${rival.name}  ${rival.lives}❤${this.state.soloMode ? " (bot)" : ""}`)
         .setColor(UI.colors.redText);
+      if (rival.connected) {
+        this.rivalWaitOverlay.setVisible(false);
+      } else {
+        this.rivalWaitText.setText(`ESPERANDO A ${rival.name.toUpperCase()}…`);
+        this.rivalWaitOverlay.setVisible(true);
+      }
     } else {
       this.rivalText.setText("");
+      this.rivalWaitOverlay.setVisible(false);
     }
 
     this.towerHintText.setText(

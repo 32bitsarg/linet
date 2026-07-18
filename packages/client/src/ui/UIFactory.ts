@@ -3,6 +3,8 @@ import Phaser from "phaser";
 export const UI = {
   fontTitle: "Bebas Neue, Impact, sans-serif",
   fontBody: "Sora, sans-serif",
+  fontBodyWithEmoji:
+    "Sora, 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif",
   fontMono: "ui-monospace, SFMono-Regular, Menlo, monospace",
   colors: {
     gold: 0xd8c49a,
@@ -47,13 +49,19 @@ export interface ButtonOptions {
   onClick?: () => void;
 }
 
+export interface ButtonResult {
+  container: Phaser.GameObjects.Container;
+  bg: Phaser.GameObjects.Rectangle;
+  text: Phaser.GameObjects.Text;
+}
+
 export function createButton(
   scene: Phaser.Scene,
   x: number,
   y: number,
   label: string,
   opts: ButtonOptions = {},
-): Phaser.GameObjects.Container {
+): ButtonResult {
   const width = opts.width ?? 96;
   const height = opts.height ?? 44;
   const color = opts.disabled ? UI.colors.disabled : (opts.color ?? UI.colors.panelBg);
@@ -93,7 +101,7 @@ export function createButton(
     bg.on("pointerout", () => bg.setFillStyle(color));
   }
 
-  return container;
+  return { container, bg, text };
 }
 
 export interface PanelOptions {
@@ -165,7 +173,7 @@ export function createIconText(
 ): Phaser.GameObjects.Text {
   return scene.add
     .text(x, y, `${icon} ${value}`, {
-      fontFamily: UI.fontBody,
+      fontFamily: UI.fontBodyWithEmoji,
       fontSize: "14px",
       color,
       fontStyle: "bold",
