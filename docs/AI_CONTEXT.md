@@ -4,9 +4,12 @@ Documento de contexto vivo para agentes de código. Acá va el estado actual del
 
 ## Estado general
 
-- **Fase actual:** MVP casi cerrado, en polish.
-- **Branch activo:** `polish/mvp-feedback-and-ui-fixes`
-- **Última sesión:** revisión del PR #2 (`refactor/ui-polish`) + plan de polish MVP.
+- **Fase actual:** MVP cerrado; presentación modernizada.
+- **Branch activo:** `master`
+- **Últimos PRs:**
+  - PR #2 `refactor/ui-polish` — HUD, build/send bars, tower panel.
+  - PR #5 `feat/maze-scale-path-sends` — maze 14×17, cámara RTS, sprites PNG, terreno, sends agresivos.
+  - PR #6 `polish/mvp-feedback-and-ui-fixes` — slow visual, overlays reconnect, refactor `UIFactory.createButton`, emoji fonts, roadmap actualizado.
 
 ## Features MVP — estado real
 
@@ -17,7 +20,9 @@ Documento de contexto vivo para agentes de código. Acá va el estado actual del
 | `tower-place-sell` | Place / sell | done | |
 | `tower-upgrades` | Upgrades L1→L3 | done | |
 | `combat-basic` | Daño, HP, kills | done | Hitscan. |
-| `status-slow` | Slow | done | Simulación funcional; feedback visual azul en cliente (esta sesión). |
+| `status-slow` | Slow | done | Torre frost; feedback visual azul en cliente. |
+| `combat-armor` | Armor / resists | done | Fórmula en shared/combat. |
+| `boss-waves` | Olas boss | done | Olas 7 y 10. |
 | `aoe-splash` | Daño en área | done | Torre Cannon. |
 | `economy-gold` | Oro + rewards | done | |
 | `lives-system` | Vidas por leak | done | |
@@ -32,35 +37,39 @@ Documento de contexto vivo para agentes de código. Acá va el estado actual del
 | `mp-send` | Sends al rival | done | 4 sends. |
 | `mp-authority` | Sim en servidor | done | |
 | `mp-sync` | State sync | done | Snapshot 20 Hz. |
-| `mp-reconnect` | Reconnect corto | done | 30 s con `allowReconnection` + overlays (esta sesión). |
+| `mp-reconnect` | Reconnect corto | done | 30 s con `allowReconnection` + overlays cliente. |
+| `mp-solo-bot` | Práctica vs bot | done | Solo test, no ranked. |
 | `mp-results` | Resultados / rematch | done | |
 | `mode-classic` | Classic multi | done | |
 | `ui-lobby` | UI lobby | done | |
-| `ui-hud` | HUD partida | done | |
-| `ui-send-panel` | Panel sends | done | |
+| `ui-hud` | HUD partida | done | HUD fijo, cámara UI, rival connected. |
+| `ui-send-panel` | Panel sends | done | disabled SP/CD/minWave. |
 | `ui-build-bar` | Barra torres | done | |
+| `ui-hotkeys` | Hotkeys | done | U / S / ESC. |
 | `tech-sim-render-split` | Sim ≠ render | done | |
 | `tech-stack-phaser-colyseus` | Stack | done | |
 | `tech-content-data` | Data-driven | done | |
+| `rts-camera` | Cámara RTS | done | Pan/zoom, foco mi mapa/rival/overview. |
+| `sprites-towers-creeps` | Sprites PNG | done | idle/attack/walk + sombras + depth por Y. |
+| `terrain-procedural` | Terreno | done | grass/dirt/meadow/scrub procedural. |
 
 ## Bugs / deuda técnica abierta
 
 - [ ] `tower-targeting` — solo `first` hoy.
 - [ ] `economy-interest` — interés entre olas.
 - [ ] `wave-manual-start` — botón Next wave.
-- [ ] `boss-waves` — boss a mitad/final.
-- [ ] `ui-hotkeys` — U, S, ESC existen; faltan más.
-- [ ] `combat-armor` — sistema de armor/resists más visible.
+- [ ] `ui-settings` — Opciones (audio, fullscreen).
 
 ## Próximas acciones planificadas
 
-1. **Post-MVP inmediato:** `tower-targeting` (agregar selector en panel de torre).
+1. **Post-MVP inmediato:** `tower-targeting` (agregar selector First/Last/Strongest/Closest en panel de torre).
 2. **Post-MVP:** `economy-interest` → `wave-manual-start`.
 3. **Técnicos:** tests de cliente, CI básico.
 
 ## Notas de sesión
 
-- El slow ya funcionaba en servidor; se agregó tinte azul al creep en cliente.
-- Se agregaron overlays de "Reconectando…" y "Esperando rival…".
-- Se refactorizó `UIFactory.createButton` para exponer `bg` y evitar accesos frágiles a `container.list[0]`.
+- El slow ya funcionaba en servidor; se agregó tinte azul al sprite de creep en cliente.
+- Se agregaron overlays de "RECONNECTING…" y "ESPERANDO A RIVAL…".
+- Se refactorizó `UIFactory.createButton` para exponer `{ container, bg, text }` y se actualizó `setButtonDisabled`.
 - Se agregó fallback de emoji fonts para iconos del HUD.
+- Se actualizó `docs/roadmap/features.md` con estados `done` post-MVP.
