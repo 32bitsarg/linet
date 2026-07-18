@@ -6,27 +6,27 @@
   "lanes": [
     {
       "id": "lane_0",
-      "originX": 60,
-      "originY": 48,
-      "cols": 12,
-      "rows": 14,
-      "cellSize": 40,
-      "spawnCol": 5,
+      "originX": 48,
+      "originY": 34,
+      "cols": 16,
+      "rows": 23,
+      "cellSize": 28,
+      "spawnCol": 7,
       "spawnRow": 0,
-      "exitCol": 5,
-      "exitRow": 13
+      "exitCol": 7,
+      "exitRow": 22
     },
     {
       "id": "lane_1",
-      "originX": 740,
-      "originY": 48,
-      "cols": 12,
-      "rows": 14,
-      "cellSize": 40,
-      "spawnCol": 6,
+      "originX": 784,
+      "originY": 34,
+      "cols": 16,
+      "rows": 23,
+      "cellSize": 28,
+      "spawnCol": 8,
       "spawnRow": 0,
-      "exitCol": 6,
-      "exitRow": 13
+      "exitCol": 8,
+      "exitRow": 22
     }
   ]
 }

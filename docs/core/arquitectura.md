@@ -40,7 +40,9 @@ Cliente (Phaser scene)
 | `packages/shared/src/content/` | Datos de torres, creeps, olas, sends, mapa |
 | `packages/server/src/GameRoom.ts` | Room, intents, tick 20 Hz, broadcast |
 | `packages/client/src/scenes/` | Una escena Phaser por archivo |
-| `packages/client/src/net.ts` | Cliente Colyseus |
+| `packages/client/src/camera/RtsCamera.ts` | Cámara RTS (pan/zoom/foco lane); solo presentación |
+| `packages/client/src/fx/groundTextures.ts` | Texturas procedurales de terreno |
+| `packages/client/src/net.ts` | Cliente Colyseus + `requestSync` |
 | `content/*.json` | Espejo humano de defs (mantener sync) |
 
 No hay clases `PathSystem` / `BuildSystem` separadas: esas responsabilidades viven dentro de `Simulation` + `pathfinding` hasta un split explícito futuro.
@@ -55,6 +57,7 @@ upgradeTower { towerInstanceId }
 sellTower { towerInstanceId }
 sendCreeps { sendId }
 rematch {}
+sync {}                 // cliente pide snapshot fresco (GameRoom responde state)
 ```
 
 Place inválido (sella spawn→exit) emite evento `placeRejected` y no cobra oro.

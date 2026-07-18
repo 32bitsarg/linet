@@ -64,7 +64,7 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
 | `mvp-ui-lobby` | UI lobby | Crear/unir, lista de players, ready | [screens.md](../ui/screens.md) | done |
-| `mvp-hud` | HUD partida | Oro, vidas, ola, send points, rival vivo | idem | done |
+| `mvp-hud` | HUD partida | Oro, vidas, ola, SP, rival; HUD fijo + cámara RTS | [screens.md](../ui/screens.md), [camera-and-terrain.md](../ui/camera-and-terrain.md) | done |
 | `mvp-build-ui` | Build / upgrade / sell | Jugable con mouse | idem | done |
 | `mvp-send-ui` | Panel send | 2–4 sends comprables + feedback incoming | [send.md](../multiplayer/send.md) | done |
 | `mvp-range` | Preview de range | Al seleccionar/colocar | idem | partial |
@@ -74,7 +74,7 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-map-01` | 1 mapa multi | 2 laberintos grilla por jugador | [maps.md](../content/maps.md) | done |
+| `mvp-map-01` | 1 mapa multi | Twin Mazes 16×23 cell 28 + terreno/ghost path | [maps.md](../content/maps.md) | done |
 | `mvp-mode-classic` | Classic multi | Reglas estables en room | [classic.md](../modes/classic.md) | done |
 
 ## Explícitamente fuera del MVP
@@ -102,9 +102,9 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 | Duración de partida | **~8 min** |
 | Vidas iniciales | **20** |
 | Oro inicial | **200** |
-| Send points iniciales | **80** |
+| Send points iniciales | **100** |
 | Torres distintas | **5** |
-| Sends distintos | **4** |
+| Sends distintos | **5** |
 | Olas | **10** |
 | Mapa | 1 multi espejo (`line_01`) |
 | Variante multi | **A + C** (lanes + send) |

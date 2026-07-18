@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { generateGroundTextures } from "../fx/groundTextures";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -6,6 +7,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
+    generateGroundTextures(this, 64);
     this.scene.start("menu");
   }
 }

@@ -49,6 +49,10 @@ export class GameRoom extends Room {
       this.intentQueue.push({ sessionId: client.sessionId, intent: message });
     });
 
+    this.onMessage("sync", (client) => {
+      client.send("state", this.sim.snapshot());
+    });
+
     this.setSimulationInterval(() => this.serverTick(), TICK_DT * 1000);
   }
 

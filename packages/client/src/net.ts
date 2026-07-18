@@ -3,7 +3,11 @@ import type { Intent, SimEvent, SimSnapshot } from "@linet/shared";
 
 const SERVER_URL =
   import.meta.env.VITE_SERVER_URL ||
-  (typeof window !== "undefined" ? window.location.origin : "http://localhost:2567");
+  (import.meta.env.DEV
+    ? "http://localhost:2567"
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:2567");
 
 /** XHR/network failures often surface as ProgressEvent with no useful message. */
 export function formatNetError(err: unknown): string {
@@ -100,6 +104,11 @@ export class NetClient {
     this.sessionId = this.room.sessionId;
     this.room.onMessage("state", (state: SimSnapshot) => this.onState?.(state));
     this.room.onMessage("event", (event: SimEvent) => this.onEvent?.(event));
+  }
+
+  /** Call after the scene assigns `onState`, so the first snapshot is not dropped. */
+  requestSync(): void {
+    this.room?.send("sync");
   }
 
   sendIntent(intent: Intent): void {

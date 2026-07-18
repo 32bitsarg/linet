@@ -1,12 +1,21 @@
 import Phaser from "phaser";
-import { MAP, SENDS, TOWERS, towerCombatAtLevel, type SimSnapshot } from "@linet/shared";
+import {
+  MAP,
+  SENDS,
+  TOWERS,
+  cellKey,
+  findPath,
+  towerCombatAtLevel,
+  type SimSnapshot,
+} from "@linet/shared";
+import { CAMERA_BOUNDS_PAD_X, CAMERA_BOUNDS_PAD_Y, RtsCameraController } from "../camera/RtsCamera";
+import { TEX_DIRT, TEX_GRASS, TEX_MEADOW, TEX_SCRUB, cellNoise } from "../fx/groundTextures";
 import { net } from "../net";
 import {
   createBadge,
   createBanner,
   createButton,
   createIconText,
-  createPanel,
   createStyledText,
   setButtonDisabled,
   UI,
@@ -44,9 +53,16 @@ const CREEP_COLORS: Record<string, number> = {
   boss_1: 0xd32f2f,
 };
 
+const BOTTOM_H = 46;
+
+/** Y-sorted depth for faux 2.5D (lower on screen draws on top). */
+function depthAtY(y: number, layer = 0): number {
+  return 20 + Math.floor(y) + layer;
+}
+
 export class GameScene extends Phaser.Scene {
   private state: SimSnapshot | null = null;
-  private creepGfx = new Map<string, Phaser.GameObjects.Arc>();
+  private creepGfx = new Map<string, Phaser.GameObjects.Container>();
   private creepHealthBars = new Map<string, Phaser.GameObjects.Container>();
   private towerGfx = new Map<string, Phaser.GameObjects.Container>();
   private banner!: Phaser.GameObjects.Text;
@@ -64,93 +80,302 @@ export class GameScene extends Phaser.Scene {
   private placeRejectUntil = 0;
   private rangeCircle!: Phaser.GameObjects.Arc;
   private hoverCell!: Phaser.GameObjects.Rectangle;
+  private pathGfx!: Phaser.GameObjects.Graphics;
   private buildButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
   private sendButtons: { id: string; container: Phaser.GameObjects.Container }[] = [];
   private towerPanel!: Phaser.GameObjects.Container;
   private towerPanelTitle!: Phaser.GameObjects.Text;
   private towerPanelStats!: Phaser.GameObjects.Text;
+  private rtsCam!: RtsCameraController;
+  private hudCam!: Phaser.Cameras.Scene2D.Camera;
+  private readonly hudObjects = new Set<Phaser.GameObjects.GameObject>();
+  private cameraBootstrapped = false;
+  private dockBg!: Phaser.GameObjects.Rectangle;
+  private dockLine!: Phaser.GameObjects.Rectangle;
+  private dockTowersLabel!: Phaser.GameObjects.Text;
+  private dockSendsLabel!: Phaser.GameObjects.Text;
+  private camBtnMine!: Phaser.GameObjects.Container;
+  private camBtnRival!: Phaser.GameObjects.Container;
+  private camBtnAll!: Phaser.GameObjects.Container;
+  private camTip!: Phaser.GameObjects.Text;
 
   constructor() {
     super("game");
   }
 
+  /** Mark object as screen-fixed HUD (rendered only by hudCam). */
+  private registerHud<T extends Phaser.GameObjects.GameObject>(obj: T): T {
+    this.hudObjects.add(obj);
+    const depthObj = obj as unknown as Phaser.GameObjects.Components.Depth & { depth?: number };
+    if (typeof depthObj.setDepth === "function") {
+      depthObj.setDepth(Math.max(depthObj.depth ?? 0, UI.z.hud));
+    }
+    const list = (obj as unknown as { list?: Phaser.GameObjects.GameObject[] }).list;
+    if (Array.isArray(list)) {
+      for (const child of list) {
+        this.hudObjects.add(child);
+      }
+    }
+    return obj;
+  }
+
+  /** World objects must be ignored by the fixed HUD camera. */
+  private registerWorld<T extends Phaser.GameObjects.GameObject>(obj: T): T {
+    this.hudCam?.ignore(obj);
+    return obj;
+  }
+
+  /** Continuous terrain under/around the mazes (meadow + scrub + dirt patches). */
+  private paintWorldTerrain() {
+    const worldW = MAP.width + CAMERA_BOUNDS_PAD_X * 2;
+    const worldH = MAP.height + CAMERA_BOUNDS_PAD_Y * 2;
+    const cx = MAP.width / 2;
+    const cy = MAP.height / 2;
+
+    // Far padding — darker scrub so the playable field reads as a clearing
+    this.add
+      .tileSprite(cx, cy, worldW, worldH, TEX_SCRUB)
+      .setDepth(0)
+      .setTint(0x889988);
+
+    // Main meadow covering the map area (+ a bit of bleed)
+    const bleed = 48;
+    this.add
+      .tileSprite(cx, cy, MAP.width + bleed * 2, MAP.height + bleed * 2, TEX_MEADOW)
+      .setDepth(0)
+      .setTint(0xb8d0a8)
+      .setAlpha(0.98);
+
+    // Ally / rival atmosphere washes (still terrain-tinted, not flat panels)
+    this.add
+      .rectangle(0, 0, MAP.width / 2, MAP.height, 0x14301c, 0.18)
+      .setOrigin(0)
+      .setDepth(0);
+    this.add
+      .rectangle(MAP.width / 2, 0, MAP.width / 2, MAP.height, 0x2a1818, 0.16)
+      .setOrigin(0)
+      .setDepth(0);
+
+    // Dirt patches between / around lanes so meadow ↔ maze dirt connects
+    const patches: { x: number; y: number; w: number; h: number; tint: number; alpha: number }[] = [
+      { x: MAP.width / 2, y: MAP.height * 0.28, w: 160, h: 220, tint: 0xc4a890, alpha: 0.75 },
+      { x: MAP.width / 2, y: MAP.height * 0.62, w: 140, h: 180, tint: 0xb89878, alpha: 0.7 },
+      { x: 24, y: MAP.height * 0.45, w: 90, h: 260, tint: 0xa8c098, alpha: 0.55 },
+      { x: MAP.width - 24, y: MAP.height * 0.5, w: 90, h: 240, tint: 0xc09080, alpha: 0.5 },
+      { x: 220, y: 20, w: 200, h: 70, tint: 0xb0c8a0, alpha: 0.6 },
+      { x: 1060, y: 20, w: 200, h: 70, tint: 0xc8a090, alpha: 0.55 },
+      { x: 220, y: MAP.height - 16, w: 220, h: 60, tint: 0xa89878, alpha: 0.55 },
+      { x: 1060, y: MAP.height - 16, w: 220, h: 60, tint: 0xb08070, alpha: 0.5 },
+    ];
+
+    for (let i = 0; i < patches.length; i++) {
+      const p = patches[i]!;
+      const key = i % 3 === 0 ? TEX_DIRT : TEX_MEADOW;
+      this.add
+        .tileSprite(p.x, p.y, p.w, p.h, key)
+        .setDepth(0)
+        .setTint(p.tint)
+        .setAlpha(p.alpha)
+        .setAngle((i % 5) * 7 - 14);
+    }
+
+    // Soft path of dirt down the center corridor (between mazes)
+    this.add
+      .tileSprite(MAP.width / 2, MAP.height / 2, 72, MAP.height - 40, TEX_DIRT)
+      .setDepth(0)
+      .setTint(0xb09070)
+      .setAlpha(0.45);
+  }
+
+  private setupHudCamera() {
+    const { width, height } = this.scale;
+    this.hudCam = this.cameras.add(0, 0, width, height);
+    this.hudCam.setName("hud");
+    this.hudCam.setScroll(0, 0);
+    this.hudCam.setZoom(1);
+    this.hudCam.setRoundPixels(true);
+    this.hudCam.transparent = true;
+    this.hudCam.setBackgroundColor("rgba(0,0,0,0)");
+
+    const hudList = [...this.hudObjects];
+    this.cameras.main.ignore(hudList);
+
+    for (const child of this.children.list) {
+      if (!this.hudObjects.has(child)) {
+        this.hudCam.ignore(child);
+      }
+    }
+  }
+
+  private onGameResize(gameSize: Phaser.Structs.Size) {
+    const width = gameSize.width;
+    const height = gameSize.height;
+    this.cameras.main.setSize(width, height);
+    if (this.hudCam) {
+      this.hudCam.setViewport(0, 0, width, height);
+      this.hudCam.setSize(width, height);
+    }
+    this.rtsCam?.refreshViewport(false);
+    this.layoutHud(width, height);
+  }
+
+  private layoutHud(width: number, height: number) {
+    if (!this.dockBg) return;
+    this.dockBg.setPosition(0, height - BOTTOM_H).setSize(width, BOTTOM_H);
+    this.dockLine.setPosition(0, height - BOTTOM_H).setSize(width, 1);
+    this.dockTowersLabel.setPosition(24, height - BOTTOM_H + 6);
+    this.dockSendsLabel.setPosition(width - 24, height - BOTTOM_H + 6);
+
+    const chipY = 16;
+    this.waveBadge?.setPosition(48, chipY);
+    this.countdownText?.setPosition(90, chipY - 5);
+    this.livesText?.setPosition(width / 2 - 96, chipY - 5);
+    this.goldText?.setPosition(width / 2 - 16, chipY - 5);
+    this.spText?.setPosition(width / 2 + 72, chipY - 5);
+    this.rivalText?.setPosition(width - 14, chipY - 5);
+    this.towerHintText?.setPosition(width / 2, height - BOTTOM_H - 12);
+    this.banner?.setPosition(width / 2, 34);
+
+    this.camBtnMine?.setPosition(width / 2 - 80, 42);
+    this.camBtnRival?.setPosition(width / 2, 42);
+    this.camBtnAll?.setPosition(width / 2 + 80, 42);
+    this.camTip?.setPosition(width / 2, 58);
+
+    this.buildButtons.forEach((btn, i) => {
+      btn.container.setPosition(72 + i * 70, height - 22);
+    });
+    this.sendButtons.forEach((btn, i) => {
+      btn.container.setPosition(width - 48 - i * 58, height - 22);
+    });
+
+    this.towerPanel?.setPosition(width - 150 / 2 - 10, 96);
+  }
+
   create() {
     const { width, height } = this.scale;
 
-    const bg = this.add.graphics().setDepth(0);
-    bg.fillGradientStyle(0x0c1410, 0x0c1410, 0x152018, 0x1a2420, 1);
-    bg.fillRect(0, 0, width, height);
+    this.rtsCam = new RtsCameraController(this, {
+      hudBottom: BOTTOM_H,
+      hudTop: 40,
+    });
 
-    // Side atmospheres: ally moss vs rival iron
-    this.add.rectangle(0, 0, width / 2, 640, 0x14301c, 0.35).setOrigin(0).setDepth(0);
-    this.add.rectangle(width / 2, 0, width / 2, 640, 0x2a1818, 0.32).setOrigin(0).setDepth(0);
+    this.paintWorldTerrain();
 
-    const divider = this.add.rectangle(width / 2, 320, 3, 620, 0xd8c49a, 0.35).setDepth(4);
+    const divider = this.add
+      .rectangle(MAP.width / 2, MAP.height / 2, 2, MAP.height - 40, 0xd8c49a, 0.28)
+      .setDepth(4);
     this.tweens.add({
       targets: divider,
-      alpha: { from: 0.22, to: 0.55 },
-      duration: 2400,
+      alpha: { from: 0.18, to: 0.42 },
+      duration: 2600,
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut",
     });
 
-    this.add.rectangle(0, height - 56, width, 56, 0x080c09, 0.96).setOrigin(0).setDepth(5);
-    this.add.rectangle(0, height - 56, width, 2, 0xd8c49a, 0.25).setOrigin(0).setDepth(6);
+    // Bottom action dock (screen-space HUD)
+    this.dockBg = this.registerHud(
+      this.add.rectangle(0, height - BOTTOM_H, width, BOTTOM_H, 0x060a08, 0.97).setOrigin(0),
+    );
+    this.dockLine = this.registerHud(
+      this.add.rectangle(0, height - BOTTOM_H, width, 1, 0xd8c49a, 0.35).setOrigin(0),
+    );
+    this.dockTowersLabel = this.registerHud(
+      this.add.text(24, height - BOTTOM_H + 6, "TORRES", {
+        fontFamily: UI.fontTitle,
+        fontSize: "11px",
+        color: UI.colors.goldText,
+        letterSpacing: 2,
+      }),
+    );
+    this.dockSendsLabel = this.registerHud(
+      this.add
+        .text(width - 24, height - BOTTOM_H + 6, "SENDS", {
+          fontFamily: UI.fontTitle,
+          fontSize: "11px",
+          color: UI.colors.redText,
+          letterSpacing: 2,
+        })
+        .setOrigin(1, 0),
+    );
 
+    const lane0 = MAP.lanes[0]!;
+    const lane1 = MAP.lanes[1]!;
     this.laneLabelLeft = this.add
-      .text(MAP.lanes[0]!.originX, 14, "TU LÍNEA", {
-        fontFamily: "Bebas Neue, Impact, sans-serif",
-        fontSize: "26px",
+      .text(lane0.originX + (lane0.cols * lane0.cellSize) / 2, lane0.originY - 18, "TU LÍNEA", {
+        fontFamily: UI.fontTitle,
+        fontSize: "18px",
         color: "#6fbf78",
         letterSpacing: 3,
       })
+      .setOrigin(0.5, 1)
       .setDepth(8);
     this.laneLabelRight = this.add
-      .text(MAP.lanes[1]!.originX, 14, "RIVAL", {
-        fontFamily: "Bebas Neue, Impact, sans-serif",
-        fontSize: "26px",
+      .text(lane1.originX + (lane1.cols * lane1.cellSize) / 2, lane1.originY - 18, "RIVAL", {
+        fontFamily: UI.fontTitle,
+        fontSize: "18px",
         color: "#c45a4a",
         letterSpacing: 3,
       })
+      .setOrigin(0.5, 1)
       .setDepth(8);
 
+    const cell = lane0.cellSize;
     this.hoverCell = this.add
-      .rectangle(0, 0, 36, 36, 0x6fbf78, 0.22)
-      .setStrokeStyle(2, 0xd8c49a, 0.85)
+      .rectangle(0, 0, cell - 3, cell - 3, 0x6fbf78, 0.22)
+      .setStrokeStyle(2, 0xd8c49a, 0.9)
       .setVisible(false)
       .setDepth(3);
+
+    this.pathGfx = this.add.graphics().setDepth(2);
 
     MAP.lanes.forEach((lane, laneIndex) => {
       const ally = laneIndex === 0;
       const accent = ally ? 0x6fbf78 : 0xc45a4a;
-      const fill = ally ? 0x1c2e22 : 0x2a1e1c;
-      const grid = ally ? 0x2f4a38 : 0x4a302c;
+      const grid = ally ? 0x2a4032 : 0x403028;
       const g = this.add.graphics().setDepth(1);
       const w = lane.cols * lane.cellSize;
       const h = lane.rows * lane.cellSize;
 
-      // Outer frame
-      g.fillStyle(fill, 0.95);
-      g.fillRect(lane.originX - 4, lane.originY - 4, w + 8, h + 8);
-      g.lineStyle(2, accent, 0.75);
-      g.strokeRect(lane.originX - 4, lane.originY - 4, w + 8, h + 8);
+      // Outer shadow / frame
+      g.fillStyle(0x000000, 0.35);
+      g.fillRect(lane.originX - 2, lane.originY - 2, w + 4, h + 4);
 
-      // Checkerboard-ish ground
+      // Mixed grass + dirt tile floor
       for (let r = 0; r < lane.rows; r++) {
         for (let c = 0; c < lane.cols; c++) {
-          const shade = (c + r) % 2 === 0 ? 0.12 : 0.06;
-          g.fillStyle(0x000000, shade);
-          g.fillRect(
-            lane.originX + c * lane.cellSize,
-            lane.originY + r * lane.cellSize,
-            lane.cellSize,
-            lane.cellSize,
-          );
+          const n = cellNoise(c, r, laneIndex + 1);
+          const n2 = cellNoise(c + 3, r + 5, laneIndex + 9);
+          // Ally: mostly grass with dirt patches. Rival: more scorched dirt.
+          const grassBias = ally ? 0.38 : 0.58;
+          const useDirt = n > grassBias;
+          const key = useDirt ? TEX_DIRT : TEX_GRASS;
+          const img = this.add
+            .image(
+              lane.originX + c * lane.cellSize + lane.cellSize / 2,
+              lane.originY + r * lane.cellSize + lane.cellSize / 2,
+              key,
+            )
+            .setDisplaySize(lane.cellSize + 1, lane.cellSize + 1)
+            .setDepth(1);
+
+          if (ally) {
+            img.setTint(useDirt ? 0xc8d8b8 : 0xb8e0b0);
+          } else {
+            img.setTint(useDirt ? 0xe0a090 : 0xc09070);
+          }
+          // Slight brightness variation so the mix feels organic
+          img.setAlpha(0.88 + n2 * 0.12);
         }
       }
 
-      g.lineStyle(1, grid, 0.55);
+      // Soft vignette at bottom of maze
+      g.fillStyle(0x000000, 0.16);
+      g.fillRect(lane.originX, lane.originY + h - 12, w, 12);
+      g.lineStyle(2, accent, 0.85);
+      g.strokeRect(lane.originX - 1, lane.originY - 1, w + 2, h + 2);
+
+      g.lineStyle(1, grid, 0.28);
       for (let c = 0; c <= lane.cols; c++) {
         const x = lane.originX + c * lane.cellSize;
         g.lineBetween(x, lane.originY, x, lane.originY + h);
@@ -165,24 +390,24 @@ export class GameScene extends Phaser.Scene {
       const exitX = lane.originX + lane.exitCol * lane.cellSize;
       const exitY = lane.originY + lane.exitRow * lane.cellSize;
 
-      g.fillStyle(0x3d7a45, 0.65);
-      g.fillRect(spawnX + 2, spawnY + 2, lane.cellSize - 4, lane.cellSize - 4);
-      g.fillStyle(0x8a3a35, 0.7);
-      g.fillRect(exitX + 2, exitY + 2, lane.cellSize - 4, lane.cellSize - 4);
+      g.fillStyle(0x3d7a45, 0.55);
+      g.fillRect(spawnX + 1, spawnY + 1, lane.cellSize - 2, lane.cellSize - 2);
+      g.fillStyle(0x8a3a35, 0.6);
+      g.fillRect(exitX + 1, exitY + 1, lane.cellSize - 2, lane.cellSize - 2);
 
       const spawnGlow = this.add
         .rectangle(
           spawnX + lane.cellSize / 2,
           spawnY + lane.cellSize / 2,
-          lane.cellSize - 6,
-          lane.cellSize - 6,
+          lane.cellSize - 4,
+          lane.cellSize - 4,
           0x6fbf78,
           0.2,
         )
         .setDepth(2);
       this.tweens.add({
         targets: spawnGlow,
-        alpha: { from: 0.15, to: 0.45 },
+        alpha: { from: 0.12, to: 0.4 },
         duration: 1100,
         yoyo: true,
         repeat: -1,
@@ -190,41 +415,21 @@ export class GameScene extends Phaser.Scene {
       });
 
       this.add
-        .text(spawnX + lane.cellSize / 2, spawnY - 8, "ENTRADA", {
-          fontFamily: "Bebas Neue, Impact, sans-serif",
-          fontSize: "11px",
-          color: "#a5d6a7",
-          letterSpacing: 1,
-        })
-        .setOrigin(0.5, 1)
-        .setDepth(3);
-
-      this.add
-        .text(spawnX + lane.cellSize / 2, spawnY + lane.cellSize / 2, "↓", {
-          fontFamily: "Bebas Neue, Impact, sans-serif",
-          fontSize: "18px",
+        .text(spawnX + lane.cellSize / 2, spawnY + 2, "IN", {
+          fontFamily: UI.fontTitle,
+          fontSize: "10px",
           color: "#d8f5d8",
-        })
-        .setOrigin(0.5)
-        .setDepth(3);
-
-      this.add
-        .text(exitX + lane.cellSize / 2, exitY + lane.cellSize + 8, "SALIDA", {
-          fontFamily: "Bebas Neue, Impact, sans-serif",
-          fontSize: "11px",
-          color: "#ef9a9a",
-          letterSpacing: 1,
         })
         .setOrigin(0.5, 0)
         .setDepth(3);
 
       this.add
-        .text(exitX + lane.cellSize / 2, exitY + lane.cellSize / 2, "✕", {
-          fontFamily: "Sora, sans-serif",
-          fontSize: "14px",
+        .text(exitX + lane.cellSize / 2, exitY + lane.cellSize - 2, "OUT", {
+          fontFamily: UI.fontTitle,
+          fontSize: "10px",
           color: "#ffc9c4",
         })
-        .setOrigin(0.5)
+        .setOrigin(0.5, 1)
         .setDepth(3);
 
       const hit = this.add
@@ -232,6 +437,7 @@ export class GameScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .setDepth(2);
       hit.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        if (pointer.middleButtonDown() || pointer.rightButtonDown()) return;
         this.onLanePointer(lane.id, pointer.worldX, pointer.worldY);
       });
       hit.on("pointermove", (pointer: Phaser.Input.Pointer) => {
@@ -241,30 +447,45 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.rangeCircle = this.add
-      .circle(0, 0, 10, 0xffffff, 0.06)
-      .setStrokeStyle(1, 0xd8c49a, 0.7)
+      .circle(0, 0, 10, 0xffffff, 0.05)
+      .setStrokeStyle(1, 0xd8c49a, 0.65)
       .setVisible(false)
-      .setDepth(25);
+      .setDepth(15);
 
-    // Top HUD bar
-    createPanel(this, width / 2, 32, width - 16, 48, {
-      color: UI.colors.darkBg,
-      alpha: 0.92,
-      borderColor: UI.colors.panelBorder,
-    });
-    this.waveBadge = createBadge(this, 54, 32, "OLA 0/10", UI.colors.gold);
-    this.countdownText = createStyledText(this, 102, 26, "", "small");
-    this.livesText = createIconText(this, 240, 26, "❤", "20", UI.colors.redText);
-    this.goldText = createIconText(this, 320, 26, "●", "200", UI.colors.goldText);
-    this.spText = createIconText(this, 410, 26, "⚡", "80", UI.colors.blueText);
-    this.rivalText = createStyledText(this, width - 160, 26, "", "body");
-    this.towerHintText = createStyledText(this, width / 2, 54, "", "small");
+    // Floating top HUD chips
+    const chipY = 16;
+    this.waveBadge = this.registerHud(createBadge(this, 48, chipY, "OLA 0/10", UI.colors.gold));
+    this.countdownText = this.registerHud(createStyledText(this, 90, chipY - 5, "", "small"));
+    this.livesText = this.registerHud(
+      createIconText(this, width / 2 - 96, chipY - 5, "❤", "20", UI.colors.redText),
+    );
+    this.goldText = this.registerHud(
+      createIconText(this, width / 2 - 16, chipY - 5, "●", "200", UI.colors.goldText),
+    );
+    this.spText = this.registerHud(
+      createIconText(this, width / 2 + 72, chipY - 5, "⚡", "100", UI.colors.blueText),
+    );
+    this.rivalText = this.registerHud(
+      createStyledText(this, width - 14, chipY - 5, "", "small").setOrigin(1, 0),
+    );
+    this.towerHintText = this.registerHud(
+      createStyledText(this, width / 2, height - BOTTOM_H - 12, "", "small").setOrigin(0.5),
+    );
 
-    this.banner = createBanner(this, width, height);
+    this.banner = this.registerHud(createBanner(this, width, height));
+    this.banner.setY(34);
 
+    this.createCameraControls();
     this.createBuildBar();
     this.createSendPanel();
     this.createTowerPanel();
+    this.setupHudCamera();
+    this.layoutHud(width, height);
+
+    this.scale.on("resize", this.onGameResize, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off("resize", this.onGameResize, this);
+    });
 
     net.onState = (s) => {
       this.state = s;
@@ -276,16 +497,19 @@ export class GameScene extends Phaser.Scene {
         this.scene.start("lobby");
         return;
       }
+      this.bootstrapCameraIfNeeded();
       this.syncWorld();
       this.updateHud();
     };
 
     net.onEvent = (e) => {
       if (e.type === "attack") {
-        const line = this.add
-          .line(0, 0, e.x as number, e.y as number, e.tx as number, e.ty as number, 0xffe082, 0.75)
-          .setOrigin(0, 0)
-          .setDepth(50);
+        const line = this.registerWorld(
+          this.add
+            .line(0, 0, e.x as number, e.y as number, e.tx as number, e.ty as number, 0xffe082, 0.75)
+            .setOrigin(0, 0)
+            .setDepth(depthAtY(Math.max(e.y as number, e.ty as number), 40)),
+        );
         this.tweens.add({ targets: line, alpha: 0, duration: 140, onComplete: () => line.destroy() });
       }
       if (e.type === "placeRejected") {
@@ -294,10 +518,84 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
+    net.requestSync();
+
     this.input.keyboard?.on("keydown-ESC", () => {
       this.selectedInstanceId = null;
       this.rangeCircle.setVisible(false);
     });
+
+    this.input.keyboard?.on("keydown-Q", () => this.focusMyLane());
+    this.input.keyboard?.on("keydown-E", () => this.focusRivalLane());
+    this.input.keyboard?.on("keydown-HOME", () => this.rtsCam.focusOverview());
+    this.input.keyboard?.on("keydown-ONE", () => this.focusMyLane());
+    this.input.keyboard?.on("keydown-TWO", () => this.focusRivalLane());
+    this.input.keyboard?.on("keydown-THREE", () => this.rtsCam.focusOverview());
+    this.input.keyboard?.on("keydown-SPACE", () => this.centerMyLane());
+  }
+
+  update(_time: number, delta: number) {
+    this.rtsCam.allowSPan = !this.selectedInstanceId;
+    this.rtsCam.update(delta);
+  }
+
+  private bootstrapCameraIfNeeded() {
+    if (this.cameraBootstrapped) return;
+    const me = this.me();
+    if (!me) return;
+    this.cameraBootstrapped = true;
+    this.focusMyLane(0);
+  }
+
+  private focusMyLane(duration = 280) {
+    const me = this.me();
+    const lane = MAP.lanes[me?.laneIndex ?? 0];
+    if (lane) this.rtsCam.focusLane(lane, undefined, duration);
+  }
+
+  private focusRivalLane(duration = 280) {
+    const me = this.me();
+    const rivalIndex = me ? 1 - me.laneIndex : 1;
+    const lane = MAP.lanes[rivalIndex];
+    if (lane) this.rtsCam.focusLane(lane, undefined, duration);
+  }
+
+  /** Pan only (keep zoom) so my lane is centered — Space. */
+  private centerMyLane(duration = 220) {
+    const me = this.me();
+    const lane = MAP.lanes[me?.laneIndex ?? 0];
+    if (lane) this.rtsCam.centerOnLane(lane, duration);
+  }
+
+  private createCameraControls() {
+    const { width } = this.scale;
+    const y = 42;
+    const mk = (x: number, label: string, onClick: () => void) => {
+      const btn = createButton(this, x, y, label, {
+        width: 72,
+        height: 22,
+        color: 0x1a2420,
+        borderColor: UI.colors.gold,
+        textColor: UI.colors.goldText,
+        fontSize: "9px",
+        onClick,
+      });
+      this.registerHud(btn);
+      return btn;
+    };
+    this.camBtnMine = mk(width / 2 - 80, "MI MAPA [Q]", () => this.focusMyLane());
+    this.camBtnRival = mk(width / 2, "RIVAL [E]", () => this.focusRivalLane());
+    this.camBtnAll = mk(width / 2 + 80, "TODO [3]", () => this.rtsCam.focusOverview());
+
+    this.camTip = this.registerHud(
+      createStyledText(
+        this,
+        width / 2,
+        58,
+        "Cámara: WASD · Space centra tu línea · Q/E foco",
+        "small",
+      ).setOrigin(0.5),
+    );
   }
 
   private updateHover(laneId: string, worldX: number, worldY: number) {
@@ -332,8 +630,9 @@ export class GameScene extends Phaser.Scene {
         myLane.originX + col * myLane.cellSize + myLane.cellSize / 2,
         myLane.originY + row * myLane.cellSize + myLane.cellSize / 2,
       )
-      .setSize(myLane.cellSize - 4, myLane.cellSize - 4)
+      .setSize(myLane.cellSize - 3, myLane.cellSize - 3)
       .setFillStyle(TOWER_COLORS[this.selectedTowerId] ?? 0x6fbf78, 0.38)
+      .setDepth(depthAtY(myLane.originY + row * myLane.cellSize, 1))
       .setVisible(true);
   }
 
@@ -343,17 +642,17 @@ export class GameScene extends Phaser.Scene {
 
   private createBuildBar() {
     const { height } = this.scale;
-    const startX = 64;
-    const y = height - 38;
-    const gap = 74;
+    const startX = 72;
+    const y = height - 22;
+    const gap = 70;
     TOWERS.forEach((t, i) => {
       const x = startX + i * gap;
       const btn = createButton(this, x, y, `${t.name}\n$${t.cost}`, {
-        width: 70,
-        height: 40,
+        width: 64,
+        height: 34,
         color: TOWER_COLORS[t.id] ?? 0x888888,
         textColor: UI.colors.textDark,
-        fontSize: "10px",
+        fontSize: "9px",
         selected: t.id === this.selectedTowerId,
         onClick: () => {
           this.selectedTowerId = t.id;
@@ -362,6 +661,7 @@ export class GameScene extends Phaser.Scene {
           this.refreshBuildBar();
         },
       });
+      this.registerHud(btn);
       this.buildButtons.push({ id: t.id, container: btn });
     });
   }
@@ -379,26 +679,22 @@ export class GameScene extends Phaser.Scene {
 
   private createSendPanel() {
     const { width, height } = this.scale;
-    const sends = [
-      { id: "send_swarm", label: "SWARM\n20 SP" },
-      { id: "send_fast", label: "FAST\n35 SP" },
-      { id: "send_tank", label: "TANK\n60 SP" },
-      { id: "send_boss", label: "BOSS\n120 SP" },
-    ];
-    const startX = width - 64;
-    const y = height - 38;
-    const gap = 74;
-    sends.forEach((s, i) => {
+    const startX = width - 48;
+    const y = height - 22;
+    const gap = 58;
+    [...SENDS].reverse().forEach((s, i) => {
+      const name = s.id.replace("send_", "").toUpperCase();
       const x = startX - i * gap;
-      const btn = createButton(this, x, y, s.label, {
-        width: 70,
-        height: 40,
+      const btn = createButton(this, x, y, `${name}\n${s.costSendPoints} SP`, {
+        width: 54,
+        height: 34,
         color: 0x4a2522,
         borderColor: UI.colors.red,
         textColor: UI.colors.redText,
-        fontSize: "10px",
+        fontSize: "9px",
         onClick: () => net.sendIntent({ type: "sendCreeps", sendId: s.id }),
       });
+      this.registerHud(btn);
       this.sendButtons.push({ id: s.id, container: btn });
     });
   }
@@ -445,7 +741,7 @@ export class GameScene extends Phaser.Scene {
     const panelWidth = 150;
     const panelHeight = 96;
     const x = width - panelWidth / 2 - 10;
-    const y = 84;
+    const y = 96;
     const bg = this.add
       .rectangle(0, 0, panelWidth, panelHeight, UI.colors.panelBg, 0.95)
       .setStrokeStyle(1, UI.colors.panelBorder)
@@ -476,6 +772,7 @@ export class GameScene extends Phaser.Scene {
       .container(x, y, [bg, this.towerPanelTitle, this.towerPanelStats, upBtn, sellBtn])
       .setDepth(UI.z.panels)
       .setVisible(false);
+    this.registerHud(this.towerPanel);
 
     this.input.keyboard?.on("keydown-U", () => {
       if (this.selectedInstanceId) net.sendIntent({ type: "upgradeTower", towerInstanceId: this.selectedInstanceId });
@@ -554,17 +851,23 @@ export class GameScene extends Phaser.Scene {
     for (const creep of this.state.creeps) {
       let gfx = this.creepGfx.get(creep.id);
       if (!gfx) {
-        const r = creep.creepId === "boss_1" ? 14 : creep.creepId === "brute" ? 11 : 8;
-        gfx = this.add.circle(creep.x, creep.y, r, CREEP_COLORS[creep.creepId] ?? 0xffffff).setDepth(20);
+        const r = creep.creepId === "boss_1" ? 11 : creep.creepId === "brute" ? 9 : 6;
+        const shadow = this.add.ellipse(0, r * 0.55, r * 2.1, r * 0.9, 0x000000, 0.35);
+        const body = this.add.circle(0, -r * 0.35, r, CREEP_COLORS[creep.creepId] ?? 0xffffff);
+        gfx = this.registerWorld(
+          this.add.container(creep.x, creep.y, [shadow, body]).setSize(r * 2, r * 2),
+        );
         this.creepGfx.set(creep.id, gfx);
-        const bar = this.createCreepHealthBar();
+        const bar = this.registerWorld(this.createCreepHealthBar());
         this.creepHealthBars.set(creep.id, bar);
       }
+      const body = gfx.list[1] as Phaser.GameObjects.Arc;
       gfx.setPosition(creep.x, creep.y);
       gfx.setAlpha(creep.source === "send" ? 0.85 : 1);
+      gfx.setDepth(depthAtY(creep.y, 2));
       const bar = this.creepHealthBars.get(creep.id);
       if (bar) {
-        this.updateCreepHealthBar(bar, creep, gfx);
+        this.updateCreepHealthBar(bar, creep, body);
       }
     }
 
@@ -579,25 +882,32 @@ export class GameScene extends Phaser.Scene {
       let gfx = this.towerGfx.get(tower.id);
       if (!gfx) {
         const border = TOWER_BORDER[tower.towerId] ?? 0xd8c49a;
-        const base = this.add.rectangle(0, 2, 32, 30, 0x2a3228).setStrokeStyle(2, border, 0.9);
-        const body = this.add.rectangle(0, -2, 26, 26, TOWER_COLORS[tower.towerId] ?? 0x888888);
+        const fill = TOWER_COLORS[tower.towerId] ?? 0x888888;
+        // 2.5D stack: ground shadow → pedestal → tall body → roof cap
+        const shadow = this.add.ellipse(1, 10, 24, 11, 0x000000, 0.4);
+        const pedestal = this.add.rectangle(0, 6, 22, 8, 0x1a2218).setStrokeStyle(1, border, 0.7);
+        const body = this.add.rectangle(0, -4, 18, 22, fill).setStrokeStyle(1, border, 0.85);
+        const roof = this.add.rectangle(0, -18, 14, 7, border);
         const letter = this.add
-          .text(-8, -10, TOWER_LETTER[tower.towerId] ?? "?", {
-            fontFamily: "Bebas Neue, Impact, sans-serif",
-            fontSize: "11px",
+          .text(-5, -6, TOWER_LETTER[tower.towerId] ?? "?", {
+            fontFamily: UI.fontTitle,
+            fontSize: "10px",
             color: "#111",
           })
           .setOrigin(0.5);
         const lvl = this.add
-          .text(8, -10, String(tower.level), {
-            fontFamily: "Bebas Neue, Impact, sans-serif",
-            fontSize: "12px",
+          .text(6, -6, String(tower.level), {
+            fontFamily: UI.fontTitle,
+            fontSize: "10px",
             color: "#111",
           })
           .setOrigin(0.5);
-        gfx = this.add.container(tower.x, tower.y, [base, body, letter, lvl]).setDepth(30).setSize(34, 34);
+        gfx = this.registerWorld(
+          this.add.container(tower.x, tower.y, [shadow, pedestal, body, roof, letter, lvl]).setSize(24, 28),
+        );
         body.setInteractive({ useHandCursor: true });
-        body.on("pointerdown", () => {
+        body.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+          if (pointer.middleButtonDown()) return;
           const me = this.me();
           if (!me || tower.laneIndex !== me.laneIndex) return;
           this.selectedInstanceId = tower.id;
@@ -607,9 +917,10 @@ export class GameScene extends Phaser.Scene {
         });
         this.towerGfx.set(tower.id, gfx);
       }
-      const lvlText = gfx.list[3] as Phaser.GameObjects.Text;
+      const lvlText = gfx.list[5] as Phaser.GameObjects.Text;
       lvlText.setText(String(tower.level));
       gfx.setPosition(tower.x, tower.y);
+      gfx.setDepth(depthAtY(tower.y, 5));
     }
 
     if (this.selectedInstanceId) {
@@ -617,8 +928,51 @@ export class GameScene extends Phaser.Scene {
       if (!t) {
         this.selectedInstanceId = null;
         this.rangeCircle.setVisible(false);
+      } else {
+        this.rangeCircle.setPosition(t.x, t.y).setDepth(depthAtY(t.y, 3));
       }
     }
+
+    this.redrawPaths();
+  }
+
+  /** Ghost polyline of current spawn→exit route per lane (mine bright, rival faint). */
+  private redrawPaths() {
+    if (!this.state) return;
+    this.pathGfx.clear();
+    const me = this.me();
+
+    MAP.lanes.forEach((lane, laneIndex) => {
+      const blocked = new Set<string>();
+      for (const t of this.state!.towers) {
+        if (t.laneIndex === laneIndex) blocked.add(cellKey(t.col, t.row));
+      }
+      const path = findPath(
+        lane,
+        blocked,
+        lane.spawnCol,
+        lane.spawnRow,
+        lane.exitCol,
+        lane.exitRow,
+      );
+      if (!path || path.length < 2) return;
+
+      const mine = me?.laneIndex === laneIndex;
+      const color = mine ? 0xd8c49a : 0xc45a4a;
+      const alpha = mine ? 0.5 : 0.2;
+      this.pathGfx.lineStyle(2.5, color, alpha);
+      this.pathGfx.beginPath();
+      this.pathGfx.moveTo(path[0]!.x, path[0]!.y);
+      for (let i = 1; i < path.length; i++) {
+        this.pathGfx.lineTo(path[i]!.x, path[i]!.y);
+      }
+      this.pathGfx.strokePath();
+
+      this.pathGfx.fillStyle(color, alpha * 0.85);
+      for (const p of path) {
+        this.pathGfx.fillCircle(p.x, p.y, 2);
+      }
+    });
   }
 
   private updateHud() {
@@ -691,32 +1045,30 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createCreepHealthBar(): Phaser.GameObjects.Container {
-    const width = 20;
-    const height = 4;
-    const bg = this.add.rectangle(0, 0, width, height, 0x222222).setDepth(22);
-    const fill = this.add
-      .rectangle(-width / 2, 0, width, height, 0x4ade80)
-      .setDepth(22)
-      .setOrigin(0, 0.5);
-    return this.add.container(0, 0, [bg, fill]).setDepth(22);
+    const width = 16;
+    const height = 3;
+    const bg = this.add.rectangle(0, 0, width, height, 0x222222);
+    const fill = this.add.rectangle(-width / 2, 0, width, height, 0x4ade80).setOrigin(0, 0.5);
+    return this.add.container(0, 0, [bg, fill]);
   }
 
   private updateCreepHealthBar(
     bar: Phaser.GameObjects.Container,
     creep: SimSnapshot["creeps"][number],
-    gfx: Phaser.GameObjects.Arc,
+    body: Phaser.GameObjects.Arc,
   ) {
     const pct = Math.max(0, creep.hp / creep.maxHp);
     const fill = bar.list[1] as Phaser.GameObjects.Rectangle;
     fill.scaleX = pct;
     fill.setFillStyle(this.healthBarColor(pct));
-    bar.setPosition(creep.x, creep.y - gfx.radius - 6);
-    bar.setAlpha(gfx.alpha);
+    bar.setPosition(creep.x, creep.y - body.radius - 10);
+    bar.setAlpha(body.alpha);
+    bar.setDepth(depthAtY(creep.y, 8));
   }
 
   private healthBarColor(pct: number): number {
-    if (pct > 0.6) return 0x4ade80; // green
-    if (pct > 0.3) return 0xfacc15; // yellow
-    return 0xef4444; // red
+    if (pct > 0.6) return 0x4ade80;
+    if (pct > 0.3) return 0xfacc15;
+    return 0xef4444;
   }
 }

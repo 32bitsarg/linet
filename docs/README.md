@@ -11,7 +11,9 @@ Mapa para agentes de código: [`../AGENTS.md`](../AGENTS.md).
 4. [multiplayer/overview.md](./multiplayer/overview.md) — rooms, lanes, sends.
 5. `gameplay/` + `content/` — reglas y catálogos.
 6. [balance/mvp-values.md](./balance/mvp-values.md) — números.
-7. `decisions/` — ADRs.
+7. [ui/camera-and-terrain.md](./ui/camera-and-terrain.md) — cámara RTS y terreno.
+8. [prs/](./prs/) — dossiers de PRs grandes.
+9. `decisions/` — ADRs.
 
 Si el código y un doc discrepan, **actualizá el doc** (o el código) en el mismo cambio.
 
@@ -27,7 +29,8 @@ Si el código y un doc discrepan, **actualizá el doc** (o el código) en el mis
 | [content/](./content/) | Torres, creeps, mapas |
 | [balance/](./balance/) | Valores de primer tanteo |
 | [modes/](./modes/) | Classic, random, etc. |
-| [ui/](./ui/) | Pantallas, HUD |
+| [ui/](./ui/) | Pantallas, HUD, cámara/terreno |
+| [prs/](./prs/) | Dossiers de PRs (alcance + mapa de archivos) |
 | [decisions/](./decisions/) | ADRs |
 
 ## Convención

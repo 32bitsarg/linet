@@ -22,7 +22,7 @@
 |-----------|-------|------|
 | Vidas iniciales | 20 | Leak de creep base quita 1–3 vidas; boss 10 |
 | Oro inicial | 200 | Alcanza para ~3 torres baratas + 1 upgrade |
-| Send points iniciales | 80 | Para 2–4 envíos early |
+| Send points iniciales | 100 | Más presión early (estilo Line Towers) |
 | Refund por venta | 70% | Redondeado hacia abajo |
 | Interés | No en MVP | Volver a evaluar en `next` |
 
@@ -31,7 +31,7 @@
 | Recurso | Para qué | Cómo se gana |
 |---------|----------|--------------|
 | **Gold** | Place / upgrade / sell torres | Kills, fin de ola |
-| **Send points (SP)** | Enviar creeps al rival | Kills (50% del gold reward), clear de ola (+20 SP), pasivo (+2 SP/s) |
+| **Send points (SP)** | Enviar creeps al rival | Kills (50% del gold reward), clear de ola (+28 SP), pasivo (+3 SP/s) |
 
 ## Fórmula de daño (hitscan)
 
@@ -115,10 +115,11 @@ Ejemplo Archer:
 
 | id | Creeps enviados | Costo SP | Min wave | Cooldown |
 |----|-----------------|----------|----------|----------|
-| `send_swarm` | 3× grub | 20 | 1 | 5 s |
-| `send_fast` | 2× runner | 35 | 2 | 6 s |
-| `send_tank` | 1× brute | 60 | 4 | 8 s |
-| `send_boss` | 1× shade + 1× brute | 120 | 6 | 12 s |
+| `send_swarm` | 5× grub | 15 | 1 | 4 s |
+| `send_fast` | 3× runner | 28 | 2 | 5 s |
+| `send_mix` | 3× grub + 2× runner | 40 | 3 | 6 s |
+| `send_tank` | 1× brute | 50 | 3 | 6.5 s |
+| `send_boss` | 1× shade + 2× brute | 95 | 5 | 10 s |
 
 Los creeps enviados spawnean en la cola del spawn del lane rival.  
 No hay cap de creeps vivos en MVP; se revisa si hay lag en playtests.
@@ -126,7 +127,7 @@ No hay cap de creeps vivos en MVP; se revisa si hay lag en playtests.
 ## Fin de ola y recompensas
 
 - **Clear de ola:** cuando no quedan creeps de la ola base vivos en el lane.
-- Recompensa por clear: **20 SP** (no gold extra en MVP; ya viene de kills).
+- Recompensa por clear: **28 SP** (no gold extra en MVP; ya viene de kills).
 - Los sends **no** cuentan para el clear de ola del rival; son independientes.
 
 ## Tie-break
