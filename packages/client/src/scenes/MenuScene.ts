@@ -51,7 +51,7 @@ export class MenuScene extends Phaser.Scene {
               <div class="actions" style="margin-top:8px">
                 <button type="button" id="btn-create">Crear sala</button>
                 <button type="button" class="secondary" id="btn-join-code">Unirse por código</button>
-                <button type="button" class="solo" id="btn-solo">Probar solo</button>
+                <button type="button" class="solo" id="btn-solo">Práctica vs bot (construye)</button>
               </div>
             </div>
           </div>

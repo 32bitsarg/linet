@@ -104,6 +104,54 @@ export function createButton(
   return { container, bg, text };
 }
 
+export interface ButtonRuntimeStyle {
+  color?: number;
+  borderColor?: number;
+  textColor?: string;
+}
+
+/** Mutate an existing createButton result enable/disable + optional label. */
+export function setButtonDisabled(
+  button: ButtonResult,
+  disabled: boolean,
+  opts: {
+    label?: string;
+    enabledStyle?: ButtonRuntimeStyle;
+    onClick?: () => void;
+  } = {},
+): void {
+  const bg = button.bg;
+  const text = button.text;
+  const enabledStyle = opts.enabledStyle ?? {};
+  const color = disabled ? UI.colors.disabled : (enabledStyle.color ?? UI.colors.panelBg);
+  const borderColor = disabled ? 0x555555 : (enabledStyle.borderColor ?? UI.colors.panelBorder);
+  const textColor = disabled ? "#777777" : (enabledStyle.textColor ?? UI.colors.textLight);
+
+  bg.setFillStyle(color).setStrokeStyle(1, borderColor);
+  if (opts.label !== undefined) text.setText(opts.label);
+  text.setColor(textColor);
+
+  bg.removeAllListeners();
+  if (disabled) {
+    bg.disableInteractive();
+  } else {
+    bg.setInteractive({ useHandCursor: true });
+    if (opts.onClick) {
+      bg.on("pointerdown", opts.onClick);
+      bg.on("pointerover", () => {
+        bg.setFillStyle(
+          Phaser.Display.Color.GetColor(
+            Math.min(255, ((color >> 16) & 0xff) + 20),
+            Math.min(255, ((color >> 8) & 0xff) + 20),
+            Math.min(255, (color & 0xff) + 20),
+          ),
+        );
+      });
+      bg.on("pointerout", () => bg.setFillStyle(color));
+    }
+  }
+}
+
 export interface PanelOptions {
   color?: number;
   borderColor?: number;

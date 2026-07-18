@@ -63,6 +63,7 @@ export class LobbyScene extends Phaser.Scene {
       this.renderLobby();
     };
     net.onEvent = () => undefined;
+    net.requestSync();
   }
 
   private renderLobby() {

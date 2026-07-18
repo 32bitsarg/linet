@@ -35,47 +35,47 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-mp-rooms` | Create / join room | 2+ jugadores entran con código/link | [overview.md](../multiplayer/overview.md) | mvp |
-| `mvp-mp-lobby` | Lobby + ready | La partida no arranca hasta ready (o host start) | idem | mvp |
-| `mvp-mp-authority` | Simulación en server | Cliente no puede spawnear oro/kills a dedo | [arquitectura.md](../core/arquitectura.md) | mvp |
-| `mvp-mp-sync` | State sync | Todos ven el mismo resultado de ola/leaks | idem | mvp |
-| `mvp-mp-reconnect` | Reconnect corto | Rejoin en ventana X s sin romper la room | Colyseus | mvp |
-| `mvp-mp-results` | Resultados | Pantalla final + rematch/leave | [screens.md](../ui/screens.md) | mvp |
-| `mvp-mp-lanes` | Lanes paralelos (A) | 2 laberintos espejo; ownership por lane | [overview.md](../multiplayer/overview.md) | mvp |
-| `mvp-mp-send` | Send al rival (C) | Comprar y spawnear creeps en lane rival | [send.md](../multiplayer/send.md) | mvp |
+| `mvp-mp-rooms` | Create / join room | 2+ jugadores entran con código/link | [overview.md](../multiplayer/overview.md) | done |
+| `mvp-mp-lobby` | Lobby + ready | La partida no arranca hasta ready (o host start) | idem | done |
+| `mvp-mp-authority` | Simulación en server | Cliente no puede spawnear oro/kills a dedo | [arquitectura.md](../core/arquitectura.md) | done |
+| `mvp-mp-sync` | State sync | Todos ven el mismo resultado de ola/leaks | idem | done |
+| `mvp-mp-reconnect` | Reconnect corto | Rejoin en ventana X s sin romper la room | Colyseus | partial |
+| `mvp-mp-results` | Resultados | Pantalla final + rematch/leave | [screens.md](../ui/screens.md) | done |
+| `mvp-mp-lanes` | Lanes paralelos (A) | 2 laberintos espejo; ownership por lane | [overview.md](../multiplayer/overview.md) | done |
+| `mvp-mp-send` | Send al rival (C) | Comprar y spawnear creeps en lane rival | [send.md](../multiplayer/send.md) | done |
 
 ### Core jugable
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-path` | Grilla + A* spawn/exit | Creeps pathfindean; no se puede sellar | [path.md](../gameplay/path.md) | mvp |
-| `mvp-slots` | Place en celdas | Place/sell; ownership de lane; reject block | [path.md](../gameplay/path.md) | mvp |
-| `mvp-towers` | 4–6 torres base | Roles distintos, stats jugables | [tower-roster.md](../content/tower-roster.md) | mvp |
-| `mvp-upgrades` | Upgrades lineales | L1→L2→L3 por torre MVP | [towers.md](../gameplay/towers.md) | mvp |
-| `mvp-creeps` | Roster de creeps | ≥4 tipos | [creep-roster.md](../content/creep-roster.md) | mvp |
-| `mvp-waves` | 8–12 olas fijas | Early→mid→late | [waves.md](../gameplay/waves.md) | mvp |
-| `mvp-combat` | Daño + targeting | First-target; kills en server | [combat.md](../gameplay/combat.md) | mvp |
-| `mvp-economy` | Oro + costos | Por jugador; syncado | [economy.md](../gameplay/economy.md) | mvp |
-| `mvp-lives` | Vidas / leak | Leak resta vidas al dueño del lane/path | [economy.md](../gameplay/economy.md) | mvp |
-| `mvp-winlose` | Win / lose multi | Last standing (0 vidas) | [overview.md](../multiplayer/overview.md) | mvp |
+| `mvp-path` | Grilla + A* spawn/exit | Creeps pathfindean; no se puede sellar | [path.md](../gameplay/path.md) | done |
+| `mvp-slots` | Place en celdas | Place/sell; ownership de lane; reject block | [path.md](../gameplay/path.md) | done |
+| `mvp-towers` | 4–6 torres base | Roles distintos, stats jugables | [tower-roster.md](../content/tower-roster.md) | done |
+| `mvp-upgrades` | Upgrades lineales | L1→L2→L3 por torre MVP | [towers.md](../gameplay/towers.md) | done |
+| `mvp-creeps` | Roster de creeps | ≥4 tipos | [creep-roster.md](../content/creep-roster.md) | done |
+| `mvp-waves` | 8–12 olas fijas | Early→mid→late | [waves.md](../gameplay/waves.md) | done |
+| `mvp-combat` | Daño + targeting | First-target; kills en server | [combat.md](../gameplay/combat.md) | done |
+| `mvp-economy` | Oro + costos | Por jugador; syncado | [economy.md](../gameplay/economy.md) | done |
+| `mvp-lives` | Vidas / leak | Leak resta vidas al dueño del lane/path | [economy.md](../gameplay/economy.md) | done |
+| `mvp-winlose` | Win / lose multi | Last standing (0 vidas) | [overview.md](../multiplayer/overview.md) | done |
 
 ### UI mínima
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-ui-lobby` | UI lobby | Crear/unir, lista de players, ready | [screens.md](../ui/screens.md) | mvp |
-| `mvp-hud` | HUD partida | Oro, vidas, ola, send points, rival vivo | idem | mvp |
-| `mvp-build-ui` | Build / upgrade / sell | Jugable con mouse | idem | mvp |
-| `mvp-send-ui` | Panel send | 2–4 sends comprables + feedback incoming | [send.md](../multiplayer/send.md) | mvp |
-| `mvp-range` | Preview de range | Al seleccionar/colocar | idem | mvp |
-| `mvp-end` | End screen multi | Resultados + rematch/leave | idem | mvp |
+| `mvp-ui-lobby` | UI lobby | Crear/unir, lista de players, ready | [screens.md](../ui/screens.md) | done |
+| `mvp-hud` | HUD partida | Oro, vidas, ola, SP, rival; HUD fijo + cámara RTS | [screens.md](../ui/screens.md), [camera-and-terrain.md](../ui/camera-and-terrain.md) | done |
+| `mvp-build-ui` | Build / upgrade / sell | Jugable con mouse | idem | done |
+| `mvp-send-ui` | Panel send | 2–4 sends comprables + feedback incoming | [send.md](../multiplayer/send.md) | done |
+| `mvp-range` | Preview de range | Al seleccionar/colocar | idem | partial |
+| `mvp-end` | End screen multi | Resultados + rematch/leave | idem | done |
 
 ### Contenido MVP
 
 | ID | Feature | Criterio de listo | Doc | Estado |
 |----|---------|-------------------|-----|--------|
-| `mvp-map-01` | 1 mapa multi | 2 laberintos grilla por jugador | [maps.md](../content/maps.md) | mvp |
-| `mvp-mode-classic` | Classic multi | Reglas estables en room | [classic.md](../modes/classic.md) | mvp |
+| `mvp-map-01` | 1 mapa multi | Twin Mazes 14×17 cell 36 + terreno/ghost path | [maps.md](../content/maps.md) | done |
+| `mvp-mode-classic` | Classic multi | Reglas estables en room | [classic.md](../modes/classic.md) | done |
 
 ## Explícitamente fuera del MVP
 
@@ -102,9 +102,9 @@ Sin meta-progresión, sin editor, sin ranked, sin coop (B), sin proyectiles con 
 | Duración de partida | **~8 min** |
 | Vidas iniciales | **20** |
 | Oro inicial | **200** |
-| Send points iniciales | **80** |
+| Send points iniciales | **100** |
 | Torres distintas | **5** |
-| Sends distintos | **4** |
+| Sends distintos | **5** |
 | Olas | **10** |
 | Mapa | 1 multi espejo (`line_01`) |
 | Variante multi | **A + C** (lanes + send) |

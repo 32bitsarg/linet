@@ -1,23 +1,19 @@
 # Backlog — próximas features
 
 > **Estado:** borrador  
-> Solo sale de acá lo que **no** está en el MVP.  
+> Solo sale de acá lo que **no** está hecho.  
 > Catálogo completo → [features.md](./features.md)
 
-## Prioridad `next` (justo después del MVP)
-
-Orden tentativo — reordenar cuando el MVP esté jugable.
+## Prioridad `next` (justo después del MVP jugable)
 
 | Prioridad | ID | Feature | Por qué ahora | Depende de |
 |-----------|----|---------|---------------|------------|
-| 1 | `status-slow` | Torre / efecto slow | Hace falta para builds interesantes | combat + 1 torre frost |
+| 1 | `mp-reconnect` | Reconnect + UI desconexión | Server listo; falta cliente | Colyseus + screens |
 | 2 | `tower-targeting` | Cambiar targeting | Control fino sin nuevo contenido | UI panel torre |
-| 3 | `economy-interest` | Interés entre olas | Tensión económica clásica Line TD | economy estable |
+| 3 | `economy-interest` | Interés entre olas | Tensión económica clásica | economy estable |
 | 4 | `wave-manual-start` | Next wave manual | Agencia + farming de interés | waves + UI |
-| 5 | `boss-waves` | Boss a mitad/final | Picos de drama | creeps + combat |
-| 6 | `combat-armor` | Armor / resists | Fuerza diversidad de daño | fórmulas en combat.md |
-| 7 | `ui-hotkeys` | Hotkeys | UX de partida larga | build UI |
-| 8 | `ui-settings` | Opciones | Audio / fullscreen básico | menú |
+| 5 | `ui-settings` | Opciones | Audio / fullscreen básico | menú |
+| 6 | `mvp-range-place` | Range preview al colocar | Hoy solo al seleccionar torre | GameScene hover |
 
 ## Prioridad `later` (deseable, sin fecha)
 
@@ -41,26 +37,19 @@ Orden tentativo — reordenar cuando el MVP esté jugable.
 
 ## Ideas crudas (`idea`)
 
-Anotá acá sin compromiso. Si sobrevive, promové a `later`/`next` en [features.md](./features.md).
-
 - [ ] Torres de soporte con auras
 - [ ] Fusión de torres
 - [ ] Desafíos diarios
 - [ ] Replay / ghost de partida
-- [ ] _…_
 
 ## Descarta (`cut`)
 
-Cosas que miramos y dijimos que no (para no reabrir el tema cada semana).
-
 | Feature | Motivo | Fecha |
 |---------|--------|-------|
-| _ej. maze building libre_ | Rompe el pillar Line TD | |
+| _ej. maze building libre sin pathfinding_ | Rompe el pillar Line Tower Wars | |
 
 ## Ritual
 
-Al terminar el MVP (o un corte):
-
 1. Revisá esta lista con lo aprendido al jugar.
-2. Mové 3–5 ítems a un “Sprint / corte N” concreto.
+2. Mové 3–5 ítems a un corte concreto.
 3. Actualizá estados en [features.md](./features.md).

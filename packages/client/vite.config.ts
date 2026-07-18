@@ -6,12 +6,12 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
-      // Optional: if VITE_SERVER_URL is unset and you point Client at the Vite origin
       "/matchmake": {
         target: "http://localhost:2567",
         changeOrigin: true,
       },
     },
+    // Dev talks to Colyseus on :2567 directly via VITE / import.meta.env.DEV in net.ts
   },
   resolve: {
     alias: {

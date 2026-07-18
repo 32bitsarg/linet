@@ -21,7 +21,7 @@ import {
   computeDamage,
   scaledCreepGold,
   scaledCreepHp,
-  towerStatsAtLevel,
+  towerCombatAtLevel,
   upgradeCost,
 } from "./combat.js";
 import { dist2, polylineLength } from "./path.js";
@@ -44,7 +44,7 @@ import type {
   Vec2,
 } from "../types.js";
 
-interface InternalPlayer extends PublicPlayer {
+interface InternalPlayer extends Omit<PublicPlayer, "sendCooldownUntil"> {
   sendCooldowns: Map<string, number>;
   livesBeforeFatal: number;
 }
@@ -92,7 +92,7 @@ export class Simulation {
     if (this.soloMode) return;
     this.soloMode = true;
     if (!this.players.has(BOT_SESSION_ID)) {
-      this.addPlayer(BOT_SESSION_ID, "Bot (test)");
+      this.addPlayer(BOT_SESSION_ID, "Bot");
     }
     const bot = this.players.get(BOT_SESSION_ID);
     if (bot) {
@@ -239,6 +239,7 @@ export class Simulation {
     this.tickSpawnQueue();
     this.tickCreeps();
     this.tickTowers();
+    this.tickBotBuild();
     this.checkWaveClear();
     this.checkWinLose();
 
@@ -489,7 +490,7 @@ export class Simulation {
       if (!owner || owner.eliminated) continue;
       const def = getTowerDef(tower.towerId);
       if (!def) continue;
-      const stats = towerStatsAtLevel(def.damage, def.range, def.attackInterval, tower.level);
+      const stats = towerCombatAtLevel(def, tower.level);
       tower.cooldown = Math.max(0, tower.cooldown - TICK_DT);
       if (tower.cooldown > 0) continue;
 
@@ -501,9 +502,9 @@ export class Simulation {
         tower,
         def.damageType,
         stats.damage,
-        def.splashRadius,
-        def.slowPercent,
-        def.slowDuration,
+        stats.splashRadius,
+        stats.slowPercent,
+        stats.slowDuration,
         target,
       );
       this.events.push({
@@ -515,6 +516,46 @@ export class Simulation {
         tx: target.x,
         ty: target.y,
       });
+    }
+  }
+
+  /** Solo bot: slowly builds a side-wall corridor on its lane. */
+  private botBuildAcc = 0;
+  private tickBotBuild(): void {
+    if (!this.soloMode) return;
+    const bot = this.players.get(BOT_SESSION_ID);
+    if (!bot || bot.eliminated) return;
+
+    this.botBuildAcc += TICK_DT;
+    if (this.botBuildAcc < 2.5) return;
+    this.botBuildAcc = 0;
+
+    const lane = MAP.lanes[bot.laneIndex];
+    if (!lane) return;
+
+    const candidates: { col: number; row: number; towerId: string }[] = [];
+    // Side columns leaving a 2-cell corridor around spawn/exit col
+    const corridor = lane.spawnCol;
+    for (let row = 1; row < lane.rows - 1; row++) {
+      for (const col of [0, 1, lane.cols - 2, lane.cols - 1]) {
+        if (Math.abs(col - corridor) <= 1) continue;
+        if (this.towers.some((t) => t.laneIndex === bot.laneIndex && t.col === col && t.row === row)) {
+          continue;
+        }
+        const towerId = row % 3 === 0 && bot.gold >= 100 ? "cannon" : "arrow";
+        candidates.push({ col, row, towerId });
+      }
+    }
+    if (!candidates.length) return;
+
+    // Prefer cells closer to top (earlier rows) for a forming maze
+    candidates.sort((a, b) => a.row - b.row || a.col - b.col);
+    for (const c of candidates) {
+      const def = getTowerDef(c.towerId);
+      if (!def || bot.gold < def.cost) continue;
+      const before = this.towers.length;
+      this.placeTower(bot, c.col, c.row, c.towerId);
+      if (this.towers.length > before) return;
     }
   }
 
@@ -797,6 +838,7 @@ export class Simulation {
         totalLeaks: p.totalLeaks,
         totalGoldEarned: Math.floor(p.totalGoldEarned),
         eliminated: p.eliminated,
+        sendCooldownUntil: Object.fromEntries(p.sendCooldowns.entries()),
       })),
       creeps: this.creeps.map((c) => ({
         ...c,

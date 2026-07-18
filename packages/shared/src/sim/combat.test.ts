@@ -1,5 +1,5 @@
-import { computeDamage, scaledCreepHp, upgradeCost } from "./combat.js";
-import { MAP } from "../content/index.js";
+import { computeDamage, scaledCreepHp, towerCombatAtLevel, upgradeCost } from "./combat.js";
+import { MAP, TOWERS } from "../content/index.js";
 import { cellKey, findPath, pathHasRoute } from "./pathfinding.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -16,6 +16,21 @@ test("upgrade costs", () => {
 
 test("hp scales with wave", () => {
   assert.equal(scaledCreepHp(30, 1), 34);
+});
+
+test("towerCombatAtLevel matches roster tables", () => {
+  const frost = TOWERS.find((t) => t.id === "frost")!;
+  const sniper = TOWERS.find((t) => t.id === "sniper")!;
+  const cannon = TOWERS.find((t) => t.id === "cannon")!;
+
+  assert.equal(towerCombatAtLevel(frost, 1).slowPercent, 0.3);
+  assert.equal(towerCombatAtLevel(frost, 3).slowPercent, 0.5);
+  assert.equal(towerCombatAtLevel(frost, 3).slowDuration, 2.5);
+  assert.equal(towerCombatAtLevel(sniper, 2).range, 220);
+  assert.equal(towerCombatAtLevel(sniper, 3).range, 250);
+  assert.equal(towerCombatAtLevel(cannon, 2).splashRadius, 40);
+  assert.equal(towerCombatAtLevel(cannon, 3).splashRadius, 50);
+  assert.equal(towerCombatAtLevel(sniper, 2).damage, Math.round(45 * 1.5));
 });
 
 test("empty maze has spawn-exit path", () => {
@@ -35,7 +50,6 @@ test("empty maze has spawn-exit path", () => {
 test("full block of exit neighbors can seal path", () => {
   const lane = MAP.lanes[0]!;
   const blocked = new Set<string>();
-  // Block every cell in row above exit except we block the whole maze mid-band
   for (let c = 0; c < lane.cols; c++) {
     blocked.add(cellKey(c, lane.rows - 2));
   }
