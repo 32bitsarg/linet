@@ -99,4 +99,5 @@ Si ambos jugadores llegan a 0 vidas en el mismo tick server:
 
 ## Bots / offline
 
-- Fuera del MVP. Post-MVP se evalúa un bot básico para practicar sends en una room de 1.
+- **Práctica local:** modo solo con bot que construye un laberinto pasivo (sin sends). Herramienta de test, no es ranked.
+- Bots competitivos / offline full: fuera del multi MVP.
